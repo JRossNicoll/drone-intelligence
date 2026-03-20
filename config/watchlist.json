@@ -1,0 +1,65 @@
+{
+  "rules": [
+    {
+      "id": "rule_001",
+      "name": "Black SUV entering Zone A",
+      "enabled": true,
+      "conditions": {
+        "class": ["car"],
+        "color": ["black"],
+        "zone": ["zone_a"]
+      },
+      "event_type": "watchlist_match",
+      "priority": "high",
+      "description": "Alert when a black car enters the main entrance zone"
+    },
+    {
+      "id": "rule_002",
+      "name": "Vehicle stationary > 120 seconds",
+      "enabled": true,
+      "conditions": {
+        "class": ["car", "truck", "bus"],
+        "dwell_time_min": 120,
+        "direction": ["stationary"]
+      },
+      "event_type": "dwell_alert",
+      "priority": "medium",
+      "description": "Alert when any vehicle remains stationary for over 2 minutes"
+    },
+    {
+      "id": "rule_003",
+      "name": "Truck in restricted zone",
+      "enabled": true,
+      "conditions": {
+        "class": ["truck", "construction_equipment"],
+        "zone": ["zone_b"]
+      },
+      "event_type": "zone_entry",
+      "priority": "high",
+      "description": "Alert when a truck or construction equipment enters the restricted area"
+    },
+    {
+      "id": "rule_004",
+      "name": "Boat detected anywhere",
+      "enabled": true,
+      "conditions": {
+        "class": ["boat"]
+      },
+      "event_type": "watchlist_match",
+      "priority": "low",
+      "description": "Log when a boat is detected in the monitoring area"
+    },
+    {
+      "id": "rule_005",
+      "name": "High person count",
+      "enabled": true,
+      "conditions": {
+        "class": ["person"],
+        "min_count": 5
+      },
+      "event_type": "watchlist_match",
+      "priority": "medium",
+      "description": "Alert when person count exceeds 5 (crowd detection)"
+    }
+  ]
+}

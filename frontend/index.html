@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Intelligence Dashboard</title>
+  <style>
+    :root {
+      --bg-primary: #0f1923;
+      --bg-secondary: #1a2633;
+      --bg-tertiary: #243447;
+      --text-primary: #e0e6ed;
+      --text-secondary: #8899aa;
+      --accent-blue: #00b4d8;
+      --accent-green: #00cc88;
+      --accent-red: #ff4757;
+      --accent-orange: #ffa502;
+      --accent-purple: #a855f7;
+      --border-color: #2a3a4a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      height: 48px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .status-badge.connected {
+      background: rgba(0, 204, 136, 0.15);
+      color: var(--accent-green);
+    }
+
+    .status-badge.disconnected {
+      background: rgba(255, 71, 87, 0.15);
+      color: var(--accent-red);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .connected .status-dot { background: var(--accent-green); }
+    .disconnected .status-dot { background: var(--accent-red); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .header-stats span strong {
+      color: var(--text-primary);
+    }
+
+    /* Main layout */
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      height: calc(100vh - 48px);
+    }
+
+    /* Video panel */
+    .video-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .video-container {
+      flex: 1;
+      position: relative;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .video-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .overlay-info {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .overlay-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      width: fit-content;
+    }
+
+    .overlay-tag.live {
+      background: rgba(255, 71, 87, 0.8);
+      color: white;
+    }
+
+    /* Bottom bar with zone map */
+    .bottom-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 200px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .zone-map {
+      padding: 12px;
+      background: var(--bg-secondary);
+    }
+
+    .zone-map h3 {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .zone-canvas-wrap {
+      position: relative;
+      height: 150px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .zone-canvas-wrap canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Detection stats panel */
+    .detection-stats {
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+    }
+
+    .detection-stats h3 {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-card {
+      background: var(--bg-tertiary);
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .stat-card .stat-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .sidebar-tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    .sidebar-tab.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-panel {
+      display: none;
+      padding: 12px;
+    }
+
+    .sidebar-panel.active {
+      display: block;
+    }
+
+    /* Event list */
+    .event-item {
+      padding: 10px;
+      margin-bottom: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent-blue);
+      font-size: 12px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .event-item.high { border-left-color: var(--accent-red); }
+    .event-item.medium { border-left-color: var(--accent-orange); }
+    .event-item.low { border-left-color: var(--accent-green); }
+
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .event-type {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .event-time {
+      color: var(--text-secondary);
+      font-size: 10px;
+    }
+
+    .event-desc {
+      color: var(--text-secondary);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .event-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .event-tag {
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      background: rgba(0, 180, 216, 0.15);
+      color: var(--accent-blue);
+    }
+
+    /* Tracked objects list */
+    .track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .track-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .track-id {
+      font-weight: 700;
+      color: var(--accent-blue);
+      font-size: 13px;
+      min-width: 32px;
+    }
+
+    .track-class {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .track-attrs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .track-attr {
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+    }
+
+    .track-dwell {
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    /* Watchlist editor */
+    .rule-item {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .rule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .rule-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .rule-toggle {
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .rule-toggle.enabled { background: var(--accent-green); }
+    .rule-toggle.disabled { background: var(--bg-primary); }
+
+    .rule-toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      transition: left 0.2s;
+    }
+
+    .rule-toggle.enabled::after { left: 18px; }
+    .rule-toggle.disabled::after { left: 2px; }
+
+    .rule-desc {
+      color: var(--text-secondary);
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .rule-conditions {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .rule-cond {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--accent-purple);
+    }
+
+    .rule-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .btn-small {
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-small:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .btn-small.danger:hover {
+      background: rgba(255, 71, 87, 0.2);
+      color: var(--accent-red);
+      border-color: var(--accent-red);
+    }
+
+    /* Add rule form */
+    .add-rule-btn {
+      width: 100%;
+      padding: 8px;
+      background: var(--bg-tertiary);
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      color: var(--accent-blue);
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+
+    .add-rule-btn:hover {
+      background: rgba(0, 180, 216, 0.1);
+      border-color: var(--accent-blue);
+    }
+
+    .rule-form {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      border: 1px solid var(--accent-blue);
+    }
+
+    .rule-form label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 3px;
+      margin-top: 6px;
+    }
+
+    .rule-form label:first-child {
+      margin-top: 0;
+    }
+
+    .rule-form input,
+    .rule-form select {
+      width: 100%;
+      padding: 5px 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-size: 12px;
+    }
+
+    .rule-form-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      padding: 5px 12px;
+      background: var(--accent-blue);
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-secondary {
+      padding: 5px 12px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .empty-state p {
+      margin-top: 8px;
+      font-size: 11px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a4a5a; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>DRONE INTELLIGENCE</h1>
+      <div id="connectionStatus" class="status-badge disconnected">
+        <div class="status-dot"></div>
+        <span>Disconnected</span>
+      </div>
+    </div>
+    <div class="header-stats">
+      <span>FPS: <strong id="statFps">0</strong></span>
+      <span>Objects: <strong id="statObjects">0</strong></span>
+      <span>Persons: <strong id="statPersons">0</strong></span>
+      <span>Events: <strong id="statEvents">0</strong></span>
+      <span>Frame: <strong id="statFrame">0</strong></span>
+    </div>
+  </div>
+
+  <!-- Main layout -->
+  <div class="main">
+    <!-- Left: Video + bottom bar -->
+    <div class="video-panel">
+      <div class="video-container">
+        <img id="videoFeed" src="" alt="Video Feed" crossorigin="anonymous">
+        <div class="video-overlay">
+          <div class="overlay-info">
+            <span class="overlay-tag live">LIVE</span>
+            <span id="overlaySource" class="overlay-tag"></span>
+          </div>
+        </div>
+        <canvas id="overlayCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+      </div>
+      <div class="bottom-bar">
+        <div class="zone-map">
+          <h3>Zone Map</h3>
+          <div class="zone-canvas-wrap">
+            <canvas id="zoneCanvas"></canvas>
+          </div>
+        </div>
+        <div class="detection-stats">
+          <h3>Detection Summary</h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="countCar">0</div>
+              <div class="stat-label">Cars</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="countTruck">0</div>
+              <div class="stat-label">Trucks</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="countBus">0</div>
+              <div class="stat-label">Buses</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="countBoat">0</div>
+              <div class="stat-label">Boats</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="countPerson">0</div>
+              <div class="stat-label">Persons</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="countEquip">0</div>
+              <div class="stat-label">Equip.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" data-tab="events">Events</button>
+        <button class="sidebar-tab" data-tab="tracks">Tracking</button>
+        <button class="sidebar-tab" data-tab="watchlist">Watchlist</button>
+      </div>
+      <div class="sidebar-content">
+        <!-- Events Panel -->
+        <div id="panelEvents" class="sidebar-panel active">
+          <div id="eventsList"></div>
+          <div id="eventsEmpty" class="empty-state">
+            <p>Waiting for events...</p>
+            <p>Events will appear when watchlist rules trigger</p>
+          </div>
+        </div>
+
+        <!-- Tracks Panel -->
+        <div id="panelTracks" class="sidebar-panel">
+          <div id="tracksList"></div>
+          <div id="tracksEmpty" class="empty-state">
+            <p>No tracked objects</p>
+            <p>Objects will appear when detected</p>
+          </div>
+        </div>
+
+        <!-- Watchlist Panel -->
+        <div id="panelWatchlist" class="sidebar-panel">
+          <div id="rulesList"></div>
+          <div id="ruleForm" style="display:none;"></div>
+          <button class="add-rule-btn" id="addRuleBtn">+ Add Rule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ──────────────────────────────────────────────────────
+    // Configuration
+    // ──────────────────────────────────────────────────────
+    const BACKEND_URL = 'http://localhost:3000';
+    const VISION_URL = 'http://localhost:8000';
+    const WS_URL = 'ws://localhost:3000/ws';
+
+    // ──────────────────────────────────────────────────────
+    // State
+    // ──────────────────────────────────────────────────────
+    let ws = null;
+    let connected = false;
+    let events = [];
+    let trackedObjects = [];
+    let zones = [];
+    let watchlistRules = [];
+    let frameShape = [540, 960];
+    let totalEvents = 0;
+    let showingRuleForm = false;
+
+    // ──────────────────────────────────────────────────────
+    // DOM Elements
+    // ──────────────────────────────────────────────────────
+    const $connectionStatus = document.getElementById('connectionStatus');
+    const $videoFeed = document.getElementById('videoFeed');
+    const $overlayCanvas = document.getElementById('overlayCanvas');
+    const $zoneCanvas = document.getElementById('zoneCanvas');
+    const $statFps = document.getElementById('statFps');
+    const $statObjects = document.getElementById('statObjects');
+    const $statPersons = document.getElementById('statPersons');
+    const $statEvents = document.getElementById('statEvents');
+    const $statFrame = document.getElementById('statFrame');
+    const $eventsList = document.getElementById('eventsList');
+    const $eventsEmpty = document.getElementById('eventsEmpty');
+    const $tracksList = document.getElementById('tracksList');
+    const $tracksEmpty = document.getElementById('tracksEmpty');
+    const $rulesList = document.getElementById('rulesList');
+    const $overlaySource = document.getElementById('overlaySource');
+
+    // ──────────────────────────────────────────────────────
+    // Video Feed
+    // ──────────────────────────────────────────────────────
+    function startVideoFeed() {
+      $videoFeed.src = VISION_URL + '/video_feed';
+      $videoFeed.onerror = () => {
+        setTimeout(startVideoFeed, 3000);
+      };
+    }
+
+    // ──────────────────────────────────────────────────────
+    // WebSocket Connection
+    // ──────────────────────────────────────────────────────
+    function connectWebSocket() {
+      try {
+        ws = new WebSocket(WS_URL);
+      } catch (e) {
+        setTimeout(connectWebSocket, 3000);
+        return;
+      }
+
+      ws.onopen = () => {
+        connected = true;
+        updateConnectionStatus();
+        console.log('[WS] Connected');
+      };
+
+      ws.onclose = () => {
+        connected = false;
+        updateConnectionStatus();
+        console.log('[WS] Disconnected, reconnecting...');
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onerror = () => {
+        // Will trigger onclose
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          handleMessage(data);
+        } catch (e) {
+          console.error('[WS] Parse error:', e);
+        }
+      };
+    }
+
+    function updateConnectionStatus() {
+      if (connected) {
+        $connectionStatus.className = 'status-badge connected';
+        $connectionStatus.querySelector('span').textContent = 'Connected';
+      } else {
+        $connectionStatus.className = 'status-badge disconnected';
+        $connectionStatus.querySelector('span').textContent = 'Disconnected';
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Message Handler
+    // ──────────────────────────────────────────────────────
+    function handleMessage(data) {
+      switch (data.type) {
+        case 'frame_update':
+          handleFrameUpdate(data);
+          break;
+        case 'initial_events':
+          handleInitialEvents(data);
+          break;
+      }
+    }
+
+    function handleFrameUpdate(data) {
+      // Update stats
+      const fps = data.elapsed_ms > 0 ? Math.round(1000 / data.elapsed_ms) : 0;
+      $statFps.textContent = `${data.elapsed_ms?.toFixed(0) || 0}ms`;
+      $statFrame.textContent = data.frame_number || 0;
+      $statPersons.textContent = data.person_count || 0;
+
+      // Update tracked objects
+      trackedObjects = data.tracked_objects || [];
+      $statObjects.textContent = trackedObjects.length;
+
+      // Update frame shape
+      if (data.frame_shape) {
+        frameShape = data.frame_shape;
+      }
+
+      // Update detection counts
+      updateDetectionCounts(data.detections || [], data.person_count);
+
+      // Render tracks panel
+      renderTracks();
+
+      // Handle new events
+      if (data.new_events && data.new_events.length > 0) {
+        for (const evt of data.new_events) {
+          addEvent(evt);
+        }
+      }
+
+      // Draw zone overlay with object positions
+      drawZoneMap();
+    }
+
+    function handleInitialEvents(data) {
+      if (data.events) {
+        events = data.events;
+        totalEvents = events.length;
+        $statEvents.textContent = totalEvents;
+        renderEvents();
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Detection Counts
+    // ──────────────────────────────────────────────────────
+    function updateDetectionCounts(detections, personCount) {
+      const counts = { car: 0, truck: 0, bus: 0, boat: 0, person: 0, construction_equipment: 0 };
+      for (const d of detections) {
+        if (counts[d.class] !== undefined) {
+          counts[d.class]++;
+        }
+      }
+      document.getElementById('countCar').textContent = counts.car;
+      document.getElementById('countTruck').textContent = counts.truck;
+      document.getElementById('countBus').textContent = counts.bus;
+      document.getElementById('countBoat').textContent = counts.boat;
+      document.getElementById('countPerson').textContent = personCount || counts.person;
+      document.getElementById('countEquip').textContent = counts.construction_equipment;
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Events
+    // ──────────────────────────────────────────────────────
+    function addEvent(evt) {
+      events.unshift(evt);
+      if (events.length > 200) events = events.slice(0, 200);
+      totalEvents++;
+      $statEvents.textContent = totalEvents;
+      renderEvents();
+    }
+
+    function renderEvents() {
+      if (events.length === 0) {
+        $eventsList.innerHTML = '';
+        $eventsEmpty.style.display = 'block';
+        return;
+      }
+
+      $eventsEmpty.style.display = 'none';
+
+      const html = events.slice(0, 50).map(evt => {
+        const time = new Date(evt.timestamp * 1000).toLocaleTimeString();
+        const priority = evt.priority || 'medium';
+        const tags = [];
+        if (evt.class) tags.push(evt.class);
+        if (evt.track_id) tags.push(`#${evt.track_id}`);
+        if (evt.zone_id) tags.push(evt.zone_id);
+        if (evt.attributes?.color && evt.attributes.color !== 'other') {
+          tags.push(evt.attributes.color);
+        }
+
+        return `
+          <div class="event-item ${priority}">
+            <div class="event-header">
+              <span class="event-type">${evt.type || 'event'}</span>
+              <span class="event-time">${time}</span>
+            </div>
+            <div class="event-desc">${evt.description || evt.rule_name || ''}</div>
+            <div class="event-meta">
+              ${tags.map(t => `<span class="event-tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      $eventsList.innerHTML = html;
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Tracks
+    // ──────────────────────────────────────────────────────
+    function renderTracks() {
+      if (trackedObjects.length === 0) {
+        $tracksList.innerHTML = '';
+        $tracksEmpty.style.display = 'block';
+        return;
+      }
+
+      $tracksEmpty.style.display = 'none';
+
+      const html = trackedObjects.map(obj => {
+        const attrs = obj.attributes || {};
+        const tags = [];
+        if (attrs.color && attrs.color !== 'other') tags.push(attrs.color);
+        if (attrs.size) tags.push(attrs.size);
+        if (obj.direction && obj.direction !== 'stationary') tags.push(obj.direction);
+        if (obj.zones && obj.zones.length > 0) tags.push(obj.zones.join(', '));
+
+        return `
+          <div class="track-item">
+            <div class="track-info">
+              <span class="track-id">#${obj.track_id}</span>
+              <span class="track-class">${obj.class}</span>
+              <div class="track-attrs">
+                ${tags.map(t => `<span class="track-attr">${t}</span>`).join('')}
+              </div>
+            </div>
+            <span class="track-dwell">${obj.dwell_time?.toFixed(0) || 0}s</span>
+          </div>
+        `;
+      }).join('');
+
+      $tracksList.innerHTML = html;
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Zone Map
+    // ──────────────────────────────────────────────────────
+    function drawZoneMap() {
+      const canvas = $zoneCanvas;
+      const container = canvas.parentElement;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      const ctx = canvas.getContext('2d');
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Scale factors
+      const scaleX = canvas.width / frameShape[1];
+      const scaleY = canvas.height / frameShape[0];
+
+      // Draw zones
+      for (const zone of zones) {
+        const polygon = zone.polygon || [];
+        if (polygon.length < 3) continue;
+
+        ctx.beginPath();
+        ctx.moveTo(polygon[0][0] * scaleX, polygon[0][1] * scaleY);
+        for (let i = 1; i < polygon.length; i++) {
+          ctx.lineTo(polygon[i][0] * scaleX, polygon[i][1] * scaleY);
+        }
+        ctx.closePath();
+
+        const color = zone.color || '#00ff00';
+        ctx.fillStyle = color + '20';
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Zone label
+        const cx = polygon.reduce((s, p) => s + p[0], 0) / polygon.length * scaleX;
+        const cy = polygon.reduce((s, p) => s + p[1], 0) / polygon.length * scaleY;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(zone.name || zone.id, cx, cy);
+      }
+
+      // Draw tracked objects as dots
+      const classColors = {
+        car: '#00ff00',
+        truck: '#ffa500',
+        bus: '#ff00ff',
+        boat: '#00ffff',
+        person: '#ff0000',
+        construction_equipment: '#ff8c00',
+      };
+
+      for (const obj of trackedObjects) {
+        if (!obj.center) continue;
+        const x = obj.center[0] * scaleX;
+        const y = obj.center[1] * scaleY;
+        const color = classColors[obj.class] || '#888888';
+
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`#${obj.track_id}`, x, y - 7);
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Watchlist
+    // ──────────────────────────────────────────────────────
+    async function loadWatchlist() {
+      try {
+        const res = await fetch(BACKEND_URL + '/api/config/watchlist');
+        const data = await res.json();
+        watchlistRules = data.watchlist?.rules || [];
+        renderWatchlist();
+      } catch (e) {
+        console.error('[Watchlist] Load error:', e);
+      }
+    }
+
+    function renderWatchlist() {
+      const html = watchlistRules.map(rule => {
+        const conditions = rule.conditions || {};
+        const condTags = [];
+        if (conditions.class) condTags.push(`class: ${conditions.class.join(', ')}`);
+        if (conditions.color) condTags.push(`color: ${conditions.color.join(', ')}`);
+        if (conditions.zone) condTags.push(`zone: ${conditions.zone.join(', ')}`);
+        if (conditions.dwell_time_min) condTags.push(`dwell > ${conditions.dwell_time_min}s`);
+        if (conditions.direction) condTags.push(`dir: ${conditions.direction.join(', ')}`);
+        if (conditions.min_count) condTags.push(`count >= ${conditions.min_count}`);
+
+        return `
+          <div class="rule-item">
+            <div class="rule-header">
+              <span class="rule-name">${rule.name}</span>
+              <button class="rule-toggle ${rule.enabled ? 'enabled' : 'disabled'}"
+                      onclick="toggleRule('${rule.id}')"></button>
+            </div>
+            <div class="rule-desc">${rule.description || ''}</div>
+            <div class="rule-conditions">
+              ${condTags.map(t => `<span class="rule-cond">${t}</span>`).join('')}
+              <span class="rule-cond">${rule.event_type}</span>
+              <span class="rule-cond">${rule.priority} priority</span>
+            </div>
+            <div class="rule-actions">
+              <button class="btn-small danger" onclick="deleteRule('${rule.id}')">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      $rulesList.innerHTML = html;
+    }
+
+    async function toggleRule(ruleId) {
+      const rule = watchlistRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      rule.enabled = !rule.enabled;
+
+      try {
+        await fetch(BACKEND_URL + `/api/config/watchlist/rules/${ruleId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: rule.enabled }),
+        });
+        renderWatchlist();
+      } catch (e) {
+        console.error('[Watchlist] Toggle error:', e);
+      }
+    }
+
+    async function deleteRule(ruleId) {
+      try {
+        await fetch(BACKEND_URL + `/api/config/watchlist/rules/${ruleId}`, {
+          method: 'DELETE',
+        });
+        watchlistRules = watchlistRules.filter(r => r.id !== ruleId);
+        renderWatchlist();
+      } catch (e) {
+        console.error('[Watchlist] Delete error:', e);
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Add Rule Form
+    // ──────────────────────────────────────────────────────
+    document.getElementById('addRuleBtn').addEventListener('click', () => {
+      showingRuleForm = !showingRuleForm;
+      const $form = document.getElementById('ruleForm');
+
+      if (showingRuleForm) {
+        $form.style.display = 'block';
+        $form.innerHTML = `
+          <div class="rule-form">
+            <label>Rule Name</label>
+            <input type="text" id="newRuleName" placeholder="e.g. Red truck in zone B">
+            <label>Vehicle Classes (comma-separated)</label>
+            <input type="text" id="newRuleClasses" placeholder="car, truck, bus, boat">
+            <label>Colors (comma-separated, leave empty for any)</label>
+            <input type="text" id="newRuleColors" placeholder="black, white, red, blue">
+            <label>Zones (comma-separated, leave empty for any)</label>
+            <input type="text" id="newRuleZones" placeholder="zone_a, zone_b">
+            <label>Min Dwell Time (seconds, 0 for none)</label>
+            <input type="number" id="newRuleDwell" value="0" min="0">
+            <label>Event Type</label>
+            <select id="newRuleEventType">
+              <option value="watchlist_match">Watchlist Match</option>
+              <option value="dwell_alert">Dwell Alert</option>
+              <option value="zone_entry">Zone Entry</option>
+            </select>
+            <label>Priority</label>
+            <select id="newRulePriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+            <div class="rule-form-actions">
+              <button class="btn-primary" onclick="submitNewRule()">Add Rule</button>
+              <button class="btn-secondary" onclick="cancelNewRule()">Cancel</button>
+            </div>
+          </div>
+        `;
+      } else {
+        $form.style.display = 'none';
+        $form.innerHTML = '';
+      }
+    });
+
+    async function submitNewRule() {
+      const name = document.getElementById('newRuleName').value.trim();
+      if (!name) return alert('Please enter a rule name');
+
+      const classesStr = document.getElementById('newRuleClasses').value.trim();
+      const colorsStr = document.getElementById('newRuleColors').value.trim();
+      const zonesStr = document.getElementById('newRuleZones').value.trim();
+      const dwell = parseInt(document.getElementById('newRuleDwell').value) || 0;
+      const eventType = document.getElementById('newRuleEventType').value;
+      const priority = document.getElementById('newRulePriority').value;
+
+      const conditions = {};
+      if (classesStr) conditions.class = classesStr.split(',').map(s => s.trim()).filter(Boolean);
+      if (colorsStr) conditions.color = colorsStr.split(',').map(s => s.trim()).filter(Boolean);
+      if (zonesStr) conditions.zone = zonesStr.split(',').map(s => s.trim()).filter(Boolean);
+      if (dwell > 0) conditions.dwell_time_min = dwell;
+
+      const rule = {
+        name,
+        enabled: true,
+        conditions,
+        event_type: eventType,
+        priority,
+        description: name,
+      };
+
+      try {
+        const res = await fetch(BACKEND_URL + '/api/config/watchlist/rules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(rule),
+        });
+        const data = await res.json();
+        if (data.rule) {
+          watchlistRules.push(data.rule);
+          renderWatchlist();
+        }
+        cancelNewRule();
+      } catch (e) {
+        console.error('[Watchlist] Add rule error:', e);
+      }
+    }
+
+    function cancelNewRule() {
+      showingRuleForm = false;
+      document.getElementById('ruleForm').style.display = 'none';
+      document.getElementById('ruleForm').innerHTML = '';
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Load Zones
+    // ──────────────────────────────────────────────────────
+    async function loadZones() {
+      try {
+        const res = await fetch(BACKEND_URL + '/api/config/zones');
+        const data = await res.json();
+        zones = data.zones?.zones || [];
+        drawZoneMap();
+      } catch (e) {
+        console.error('[Zones] Load error:', e);
+        setTimeout(loadZones, 5000);
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Sidebar Tabs
+    // ──────────────────────────────────────────────────────
+    document.querySelectorAll('.sidebar-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel' + capitalize(tab.dataset.tab)).classList.add('active');
+      });
+    });
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Initialize
+    // ──────────────────────────────────────────────────────
+    function init() {
+      startVideoFeed();
+      connectWebSocket();
+      loadWatchlist();
+      loadZones();
+
+      // Periodically reload zones
+      setInterval(loadZones, 30000);
+
+      // Get video source info
+      fetch(VISION_URL + '/health')
+        .then(r => r.json())
+        .then(data => {
+          if (data.config?.video_source) {
+            $overlaySource.textContent = data.config.video_source;
+          }
+        })
+        .catch(() => {});
+    }
+
+    init();
+  </script>
+</body>
+</html>

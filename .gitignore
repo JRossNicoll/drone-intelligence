@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+*.pt
+*.onnx
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Runtime data
+data/events/*.json
+data/clips/*.mp4
+data/clips/*.avi
+
+# Environment
+.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Video files (too large for git)
+vision/*.mp4
+vision/*.avi
+vision/*.mkv

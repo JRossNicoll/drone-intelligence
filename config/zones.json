@@ -1,0 +1,40 @@
+{
+  "zones": [
+    {
+      "id": "zone_a",
+      "name": "Main Entrance",
+      "type": "monitored",
+      "polygon": [
+        [100, 100],
+        [500, 100],
+        [500, 400],
+        [100, 400]
+      ],
+      "color": "#00ff00"
+    },
+    {
+      "id": "zone_b",
+      "name": "Restricted Area",
+      "type": "restricted",
+      "polygon": [
+        [550, 200],
+        [900, 200],
+        [900, 500],
+        [550, 500]
+      ],
+      "color": "#ff0000"
+    },
+    {
+      "id": "zone_c",
+      "name": "Parking Lot",
+      "type": "monitored",
+      "polygon": [
+        [50, 450],
+        [450, 450],
+        [450, 700],
+        [50, 700]
+      ],
+      "color": "#0000ff"
+    }
+  ]
+}
