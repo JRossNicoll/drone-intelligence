@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import threading
 import time
 from typing import Any, Callable
 
@@ -154,8 +155,12 @@ class VideoPipeline:
 
         return results
 
-    async def run(self) -> None:
-        """Run the pipeline loop asynchronously."""
+    def run_sync(self) -> None:
+        """Run the pipeline loop in a synchronous blocking thread.
+
+        This method is designed to be called from a background thread
+        so it does not block the async event loop.
+        """
         if not self.open_source():
             print("[Pipeline] Failed to open source, exiting")
             return
@@ -189,9 +194,15 @@ class VideoPipeline:
             elapsed = time.time() - loop_start
             sleep_time = max(0, frame_interval - elapsed)
             if sleep_time > 0:
-                await asyncio.sleep(sleep_time)
+                time.sleep(sleep_time)
 
         self.cleanup()
+
+    def start_background(self) -> threading.Thread:
+        """Start the pipeline in a background daemon thread."""
+        thread = threading.Thread(target=self.run_sync, daemon=True)
+        thread.start()
+        return thread
 
     def get_clip_frames(self, duration: float = 8.0) -> list[tuple[float, np.ndarray]]:
         """Get recent frames for video clip saving.

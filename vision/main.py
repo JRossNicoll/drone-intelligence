@@ -23,15 +23,12 @@ pipeline: VideoPipeline | None = None
 clip_saver = ClipSaver(output_dir="../data/clips", fps=config.TARGET_FPS)
 connected_ws: list[WebSocket] = []
 latest_results: dict[str, Any] = {}
-pipeline_task: asyncio.Task | None = None
+pipeline_thread = None
+_event_loop: asyncio.AbstractEventLoop | None = None
 
 
-async def broadcast_results(results: dict[str, Any]) -> None:
+async def _broadcast_results_async(results: dict[str, Any]) -> None:
     """Broadcast processing results to all connected WebSocket clients."""
-    global latest_results
-    latest_results = results
-
-    # Prepare serializable message (strip non-serializable fields)
     message = {
         "type": "frame_results",
         "timestamp": results["timestamp"],
@@ -53,38 +50,34 @@ async def broadcast_results(results: dict[str, Any]) -> None:
             disconnected.append(ws)
 
     for ws in disconnected:
-        connected_ws.remove(ws)
+        if ws in connected_ws:
+            connected_ws.remove(ws)
 
 
 def on_frame_processed(results: dict[str, Any]) -> None:
-    """Callback from pipeline - schedules async broadcast."""
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            asyncio.ensure_future(broadcast_results(results))
-    except RuntimeError:
-        pass
+    """Callback from pipeline thread - thread-safely schedules async broadcast."""
+    global latest_results
+    latest_results = results
+    if _event_loop is not None:
+        asyncio.run_coroutine_threadsafe(_broadcast_results_async(results), _event_loop)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan - start/stop pipeline."""
-    global pipeline, pipeline_task
+    """Application lifespan - start/stop pipeline in background thread."""
+    global pipeline, pipeline_thread, _event_loop
 
+    _event_loop = asyncio.get_running_loop()
     pipeline = VideoPipeline(config=config, on_frame_processed=on_frame_processed)
-    pipeline_task = asyncio.create_task(pipeline.run())
-    print("[App] Pipeline started")
+    pipeline_thread = pipeline.start_background()
+    print("[App] Pipeline started in background thread")
 
     yield
 
     if pipeline:
         pipeline.stop()
-    if pipeline_task:
-        pipeline_task.cancel()
-        try:
-            await pipeline_task
-        except asyncio.CancelledError:
-            pass
+    if pipeline_thread:
+        pipeline_thread.join(timeout=5)
     print("[App] Pipeline stopped")
 
 
