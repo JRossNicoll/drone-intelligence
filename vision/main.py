@@ -236,6 +236,15 @@ async def get_zones() -> dict[str, Any]:
     return {"status": "ok", "zones": pipeline.zone_manager.get_zones()}
 
 
+@app.post("/zones/reload")
+async def reload_zones() -> dict[str, Any]:
+    """Reload zone definitions from disk after config update."""
+    if pipeline is None:
+        return {"status": "error", "message": "Pipeline not running"}
+    pipeline.reload_zones()
+    return {"status": "ok", "message": "Zones reloaded", "count": len(pipeline.zone_manager.zones)}
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket) -> None:
     """WebSocket endpoint for real-time detection streaming."""

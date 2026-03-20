@@ -204,6 +204,10 @@ class VideoPipeline:
         thread.start()
         return thread
 
+    def reload_zones(self) -> None:
+        """Reload zone definitions from disk (called when zones are updated via API)."""
+        self.zone_manager.load_zones()
+
     def get_clip_frames(self, duration: float = 8.0) -> list[tuple[float, np.ndarray]]:
         """Get recent frames for video clip saving.
 

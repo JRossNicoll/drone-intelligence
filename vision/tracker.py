@@ -62,12 +62,18 @@ class ObjectTracker:
                 class_id = int(tracked.class_id[i]) if tracked.class_id is not None else -1
                 confidence = float(tracked.confidence[i]) if tracked.confidence is not None else 0.0
 
-                # Find matching detection for class name
+                # Find matching detection for class name using bbox IoU
+                # (class_id alone is ambiguous when detection.py relabels
+                # some trucks as construction_equipment)
                 class_name = "unknown"
+                best_iou = 0.0
                 for d in detections_list:
-                    if d["class_id"] == class_id:
+                    if d["class_id"] != class_id:
+                        continue
+                    iou = self._bbox_iou(bbox, d["bbox"])
+                    if iou > best_iou:
+                        best_iou = iou
                         class_name = d["class"]
-                        break
 
                 # Calculate bbox center
                 cx = (bbox[0] + bbox[2]) / 2
@@ -118,6 +124,19 @@ class ObjectTracker:
         self._age_tracks(timestamp, active_track_ids)
 
         return tracked_objects
+
+    @staticmethod
+    def _bbox_iou(a: list[float], b: list[float]) -> float:
+        """Compute Intersection-over-Union between two [x1,y1,x2,y2] bboxes."""
+        x1 = max(a[0], b[0])
+        y1 = max(a[1], b[1])
+        x2 = min(a[2], b[2])
+        y2 = min(a[3], b[3])
+        inter = max(0, x2 - x1) * max(0, y2 - y1)
+        area_a = (a[2] - a[0]) * (a[3] - a[1])
+        area_b = (b[2] - b[0]) * (b[3] - b[1])
+        union = area_a + area_b - inter
+        return inter / union if union > 0 else 0.0
 
     def _compute_direction(self, positions: list[tuple[float, float, float]]) -> str:
         """Compute movement direction from recent positions."""

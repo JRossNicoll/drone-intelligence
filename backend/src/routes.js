@@ -4,6 +4,8 @@
 
 const express = require('express');
 
+const VISION_API_URL = process.env.VISION_API_URL || 'http://localhost:8000';
+
 /**
  * Create API router with injected dependencies.
  * @param {import('./configManager').ConfigManager} configManager
@@ -146,9 +148,15 @@ function createApiRoutes(configManager, eventStore, rulesEngine) {
   /**
    * POST /api/config/zones - Update zones
    */
-  router.post('/config/zones', (req, res) => {
+  router.post('/config/zones', async (req, res) => {
     const success = configManager.updateZones(req.body);
     if (success) {
+      // Notify vision service to reload zone definitions from disk
+      try {
+        await fetch(`${VISION_API_URL}/zones/reload`, { method: 'POST' });
+      } catch (_) {
+        // Vision service may be unavailable; zones will reload on next restart
+      }
       res.json({ status: 'ok', message: 'Zones updated', zones: configManager.getZonesConfig() });
     } else {
       res.status(400).json({ status: 'error', message: 'Invalid zones format. Expected { zones: [...] }' });
@@ -167,6 +175,7 @@ function createApiRoutes(configManager, eventStore, rulesEngine) {
       events_count: eventStore.events.length,
       rules_count: configManager.getWatchlistRules().length,
       zones_count: configManager.getZones().length,
+      vision_url: VISION_API_URL,
     });
   });
 
