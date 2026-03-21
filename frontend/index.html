@@ -3,732 +3,302 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drone Intelligence Dashboard</title>
+  <title>Drone Intelligence - Aerial Perception System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #0f1923;
-      --bg-secondary: #1a2633;
-      --bg-tertiary: #243447;
-      --text-primary: #e0e6ed;
-      --text-secondary: #8899aa;
-      --accent-blue: #00b4d8;
-      --accent-green: #00cc88;
-      --accent-red: #ff4757;
-      --accent-orange: #ffa502;
-      --accent-purple: #a855f7;
-      --border-color: #2a3a4a;
+      --bg-primary: #06080d;
+      --bg-secondary: #0c1017;
+      --bg-card: #111720;
+      --bg-card-hover: #161d2a;
+      --bg-elevated: #1a2234;
+      --bg-input: #0d1219;
+      --text-primary: #e8ecf4;
+      --text-secondary: #7a8ba8;
+      --text-muted: #4a5568;
+      --accent-cyan: #06d6f2;
+      --accent-cyan-dim: rgba(6, 214, 242, 0.12);
+      --accent-green: #10b981;
+      --accent-green-dim: rgba(16, 185, 129, 0.12);
+      --accent-red: #ef4444;
+      --accent-red-dim: rgba(239, 68, 68, 0.12);
+      --accent-amber: #f59e0b;
+      --accent-amber-dim: rgba(245, 158, 11, 0.12);
+      --accent-purple: #8b5cf6;
+      --accent-purple-dim: rgba(139, 92, 246, 0.12);
+      --accent-blue: #3b82f6;
+      --accent-blue-dim: rgba(59, 130, 246, 0.12);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-accent: rgba(6, 214, 242, 0.2);
+      --glow-cyan: 0 0 20px rgba(6, 214, 242, 0.15);
+      --glow-green: 0 0 12px rgba(16, 185, 129, 0.2);
+      --glow-red: 0 0 12px rgba(239, 68, 68, 0.2);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --radius-xs: 4px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       background: var(--bg-primary);
       color: var(--text-primary);
       overflow: hidden;
       height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-
-    /* Header */
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 16px;
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-color);
-      height: 48px;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .header h1 {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--accent-blue);
-    }
-
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 500;
-    }
-
-    .status-badge.connected {
-      background: rgba(0, 204, 136, 0.15);
-      color: var(--accent-green);
-    }
-
-    .status-badge.disconnected {
-      background: rgba(255, 71, 87, 0.15);
-      color: var(--accent-red);
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    .connected .status-dot { background: var(--accent-green); }
-    .disconnected .status-dot { background: var(--accent-red); }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    .header-stats {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .header-stats span strong {
-      color: var(--text-primary);
-    }
-
-    /* Main layout */
-    .main {
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      height: calc(100vh - 48px);
-    }
-
-    /* Video panel */
-    .video-panel {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .video-container {
-      flex: 1;
-      position: relative;
-      background: #000;
-      overflow: hidden;
-    }
-
-    .video-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .video-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-
-    .overlay-info {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .overlay-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      background: rgba(0, 0, 0, 0.7);
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 500;
-      width: fit-content;
-    }
-
-    .overlay-tag.live {
-      background: rgba(255, 71, 87, 0.8);
-      color: white;
-    }
-
-    /* Bottom bar with zone map */
-    .bottom-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      height: 200px;
-      border-top: 1px solid var(--border-color);
-    }
-
-    .zone-map {
-      padding: 12px;
-      background: var(--bg-secondary);
-    }
-
-    .zone-map h3 {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .zone-canvas-wrap {
-      position: relative;
-      height: 150px;
-      background: var(--bg-tertiary);
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .zone-canvas-wrap canvas {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Detection stats panel */
-    .detection-stats {
-      padding: 12px;
-      background: var(--bg-secondary);
-      border-left: 1px solid var(--border-color);
-    }
-
-    .detection-stats h3 {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
-
-    .stat-card {
-      background: var(--bg-tertiary);
-      padding: 8px;
-      border-radius: 6px;
-      text-align: center;
-    }
-
-    .stat-card .stat-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent-blue);
-    }
-
-    .stat-card .stat-label {
-      font-size: 10px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-secondary);
-      border-left: 1px solid var(--border-color);
-      overflow: hidden;
-    }
-
-    .sidebar-tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .sidebar-tab {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      cursor: pointer;
-      border: none;
-      background: none;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-    }
-
-    .sidebar-tab:hover {
-      color: var(--text-primary);
-      background: var(--bg-tertiary);
-    }
-
-    .sidebar-tab.active {
-      color: var(--accent-blue);
-      border-bottom-color: var(--accent-blue);
-    }
-
-    .sidebar-content {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .sidebar-panel {
-      display: none;
-      padding: 12px;
-    }
-
-    .sidebar-panel.active {
-      display: block;
-    }
-
-    /* Event list */
-    .event-item {
-      padding: 10px;
-      margin-bottom: 6px;
-      background: var(--bg-tertiary);
-      border-radius: 6px;
-      border-left: 3px solid var(--accent-blue);
-      font-size: 12px;
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    .event-item.high { border-left-color: var(--accent-red); }
-    .event-item.medium { border-left-color: var(--accent-orange); }
-    .event-item.low { border-left-color: var(--accent-green); }
-
-    .event-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    .event-type {
-      font-weight: 600;
-      color: var(--text-primary);
-      font-size: 11px;
-      text-transform: uppercase;
-    }
-
-    .event-time {
-      color: var(--text-secondary);
-      font-size: 10px;
-    }
-
-    .event-desc {
-      color: var(--text-secondary);
-      font-size: 11px;
-      line-height: 1.4;
-    }
-
-    .event-meta {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-
-    .event-tag {
-      padding: 1px 6px;
-      border-radius: 3px;
-      font-size: 10px;
-      background: rgba(0, 180, 216, 0.15);
-      color: var(--accent-blue);
-    }
-
-    /* Tracked objects list */
-    .track-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 10px;
-      margin-bottom: 4px;
-      background: var(--bg-tertiary);
-      border-radius: 6px;
-      font-size: 12px;
-    }
-
-    .track-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .track-id {
-      font-weight: 700;
-      color: var(--accent-blue);
-      font-size: 13px;
-      min-width: 32px;
-    }
-
-    .track-class {
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    .track-attrs {
-      display: flex;
-      gap: 4px;
-    }
-
-    .track-attr {
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-size: 10px;
-      background: var(--bg-primary);
-      color: var(--text-secondary);
-    }
-
-    .track-dwell {
-      color: var(--text-secondary);
-      font-size: 11px;
-    }
-
-    /* Watchlist editor */
-    .rule-item {
-      padding: 10px;
-      margin-bottom: 8px;
-      background: var(--bg-tertiary);
-      border-radius: 6px;
-      font-size: 12px;
-    }
-
-    .rule-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .rule-name {
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .rule-toggle {
-      width: 36px;
-      height: 20px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.2s;
-    }
-
-    .rule-toggle.enabled { background: var(--accent-green); }
-    .rule-toggle.disabled { background: var(--bg-primary); }
-
-    .rule-toggle::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: white;
-      top: 2px;
-      transition: left 0.2s;
-    }
-
-    .rule-toggle.enabled::after { left: 18px; }
-    .rule-toggle.disabled::after { left: 2px; }
-
-    .rule-desc {
-      color: var(--text-secondary);
-      font-size: 11px;
-      margin-bottom: 6px;
-    }
-
-    .rule-conditions {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
-    .rule-cond {
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 10px;
-      background: rgba(168, 85, 247, 0.15);
-      color: var(--accent-purple);
-    }
-
-    .rule-actions {
-      display: flex;
-      gap: 4px;
-      margin-top: 6px;
-    }
-
-    .btn-small {
-      padding: 3px 8px;
-      border-radius: 4px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-primary);
-      color: var(--text-secondary);
-      font-size: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-small:hover {
-      background: var(--bg-tertiary);
-      color: var(--text-primary);
-    }
-
-    .btn-small.danger:hover {
-      background: rgba(255, 71, 87, 0.2);
-      color: var(--accent-red);
-      border-color: var(--accent-red);
-    }
-
-    /* Add rule form */
-    .add-rule-btn {
-      width: 100%;
-      padding: 8px;
-      background: var(--bg-tertiary);
-      border: 1px dashed var(--border-color);
-      border-radius: 6px;
-      color: var(--accent-blue);
-      font-size: 12px;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: all 0.2s;
-    }
-
-    .add-rule-btn:hover {
-      background: rgba(0, 180, 216, 0.1);
-      border-color: var(--accent-blue);
-    }
-
-    .rule-form {
-      padding: 10px;
-      margin-bottom: 8px;
-      background: var(--bg-tertiary);
-      border-radius: 6px;
-      border: 1px solid var(--accent-blue);
-    }
-
-    .rule-form label {
-      display: block;
-      font-size: 11px;
-      color: var(--text-secondary);
-      margin-bottom: 3px;
-      margin-top: 6px;
-    }
-
-    .rule-form label:first-child {
-      margin-top: 0;
-    }
-
-    .rule-form input,
-    .rule-form select {
-      width: 100%;
-      padding: 5px 8px;
-      background: var(--bg-primary);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      color: var(--text-primary);
-      font-size: 12px;
-    }
-
-    .rule-form-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .btn-primary {
-      padding: 5px 12px;
-      background: var(--accent-blue);
-      border: none;
-      border-radius: 4px;
-      color: white;
-      font-size: 11px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .btn-secondary {
-      padding: 5px 12px;
-      background: var(--bg-primary);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      color: var(--text-secondary);
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-secondary);
-      font-size: 13px;
-    }
-
-    .empty-state p {
-      margin-top: 8px;
-      font-size: 11px;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-    ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3a4a5a; }
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border); height: 52px;
+      position: relative; z-index: 10;
+    }
+    .header::after {
+      content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent); opacity: 0.3;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--glow-cyan);
+    }
+    .brand-icon svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .brand-text h1 { font-size: 14px; font-weight: 700; letter-spacing: 1.5px; color: var(--text-primary); text-transform: uppercase; }
+    .brand-text span { font-size: 9px; font-weight: 500; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+    .status-pill { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; transition: var(--transition); }
+    .status-pill.connected { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.25); }
+    .status-pill.disconnected { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.25); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+    .connected .status-dot { background: var(--accent-green); box-shadow: var(--glow-green); }
+    .disconnected .status-dot { background: var(--accent-red); box-shadow: var(--glow-red); }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+    .header-metrics { display: flex; gap: 4px; }
+    .metric { display: flex; flex-direction: column; align-items: center; padding: 4px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); min-width: 68px; }
+    .metric-value { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent-cyan); }
+    .metric-label { font-size: 8px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 1px; }
+    .main { display: grid; grid-template-columns: 1fr 380px; height: calc(100vh - 52px); }
+    .left-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
+    .video-section { flex: 1; position: relative; background: #000; overflow: hidden; min-height: 0; }
+    .video-section img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .video-hud { position: absolute; top: 0; left: 0; right: 0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%); }
+    .hud-left { display: flex; flex-direction: column; gap: 6px; }
+    .hud-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--radius-xs); font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; backdrop-filter: blur(8px); width: fit-content; }
+    .hud-badge.live { background: rgba(239, 68, 68, 0.85); color: white; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+    .hud-badge.live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: white; animation: pulse 1.5s ease-in-out infinite; }
+    .hud-badge.source { background: rgba(0,0,0,0.6); color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.1); font-family: var(--font-mono); font-weight: 500; letter-spacing: 0; text-transform: none; }
+    .hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .hud-stat { padding: 3px 10px; border-radius: var(--radius-xs); background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--accent-cyan); }
+    .video-overlay-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .video-section::before, .video-section::after { content: ''; position: absolute; width: 24px; height: 24px; border-color: var(--accent-cyan); border-style: solid; border-width: 0; opacity: 0.4; z-index: 2; pointer-events: none; }
+    .video-section::before { top: 8px; left: 8px; border-top-width: 2px; border-left-width: 2px; }
+    .video-section::after { bottom: 8px; right: 8px; border-bottom-width: 2px; border-right-width: 2px; }
+    .scanlines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px); }
+    .bottom-panels { display: grid; grid-template-columns: 1fr 1fr; height: 190px; border-top: 1px solid var(--border); gap: 1px; background: var(--border); }
+    .panel-card { background: var(--bg-secondary); padding: 14px 16px; display: flex; flex-direction: column; }
+    .panel-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .panel-title::before { content: ''; width: 3px; height: 12px; border-radius: 2px; background: var(--accent-cyan); }
+    .zone-canvas-wrap { flex: 1; position: relative; background: var(--bg-card); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+    .zone-canvas-wrap canvas { width: 100%; height: 100%; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; flex: 1; }
+    .stat-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: var(--transition); }
+    .stat-tile:hover { border-color: var(--border-accent); background: var(--bg-card-hover); }
+    .stat-tile .stat-value { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--accent-cyan); line-height: 1; }
+    .stat-tile .stat-label { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    .sidebar { display: flex; flex-direction: column; background: var(--bg-secondary); border-left: 1px solid var(--border); overflow: hidden; }
+    .sidebar-tabs { display: flex; padding: 4px; background: var(--bg-primary); border-bottom: 1px solid var(--border); gap: 2px; }
+    .sidebar-tab { flex: 1; padding: 9px 8px; text-align: center; font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; border: none; background: transparent; border-radius: var(--radius-sm); transition: var(--transition); letter-spacing: 0.3px; }
+    .sidebar-tab:hover { color: var(--text-secondary); background: var(--bg-card); }
+    .sidebar-tab.active { color: var(--accent-cyan); background: var(--bg-card); box-shadow: inset 0 -2px 0 var(--accent-cyan); }
+    .sidebar-tab .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 16px; padding: 0 4px; border-radius: 8px; font-size: 9px; font-weight: 700; font-family: var(--font-mono); margin-left: 4px; background: var(--bg-elevated); color: var(--text-muted); }
+    .sidebar-tab.active .tab-count { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+    .sidebar-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .sidebar-panel { display: none; padding: 12px; }
+    .sidebar-panel.active { display: block; }
+    .event-card { padding: 12px 14px; margin-bottom: 8px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); border-left: 3px solid var(--accent-blue); font-size: 12px; animation: cardSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1); transition: var(--transition); }
+    .event-card:hover { background: var(--bg-card-hover); border-color: rgba(255,255,255,0.1); border-left-width: 3px; }
+    @keyframes cardSlide { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .event-card.high { border-left-color: var(--accent-red); }
+    .event-card.medium { border-left-color: var(--accent-amber); }
+    .event-card.low { border-left-color: var(--accent-green); }
+    .event-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .event-type { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-primary); }
+    .event-time { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+    .event-desc { color: var(--text-secondary); font-size: 11px; line-height: 1.5; margin-bottom: 8px; }
+    .event-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--font-mono); }
+    .tag-default { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+    .tag-purple { background: var(--accent-purple-dim); color: var(--accent-purple); }
+    .tag-green { background: var(--accent-green-dim); color: var(--accent-green); }
+    .tag-amber { background: var(--accent-amber-dim); color: var(--accent-amber); }
+    .track-card { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-bottom: 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; transition: var(--transition); }
+    .track-card:hover { background: var(--bg-card-hover); border-color: rgba(255,255,255,0.1); }
+    .track-left { display: flex; align-items: center; gap: 10px; }
+    .track-id-badge { font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: var(--accent-cyan); min-width: 36px; text-align: center; padding: 3px 6px; border-radius: var(--radius-xs); background: var(--accent-cyan-dim); }
+    .track-meta { display: flex; flex-direction: column; gap: 3px; }
+    .track-class { font-weight: 600; color: var(--text-primary); font-size: 12px; text-transform: capitalize; }
+    .track-attrs { display: flex; gap: 4px; }
+    .track-attr { padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; background: var(--bg-elevated); color: var(--text-muted); font-family: var(--font-mono); }
+    .track-dwell { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .track-dwell.warning { color: var(--accent-amber); }
+    .rule-card { padding: 14px; margin-bottom: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); transition: var(--transition); }
+    .rule-card:hover { background: var(--bg-card-hover); border-color: rgba(255,255,255,0.1); }
+    .rule-card.disabled-rule { opacity: 0.5; }
+    .rule-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .rule-name { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+    .toggle-switch { width: 40px; height: 22px; border-radius: 11px; border: none; cursor: pointer; position: relative; transition: var(--transition); flex-shrink: 0; }
+    .toggle-switch.on { background: var(--accent-green); box-shadow: var(--glow-green); }
+    .toggle-switch.off { background: var(--bg-primary); border: 1px solid var(--border); }
+    .toggle-switch::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: white; top: 3px; transition: var(--transition); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    .toggle-switch.on::after { left: 21px; }
+    .toggle-switch.off::after { left: 3px; }
+    .rule-desc { color: var(--text-secondary); font-size: 11px; line-height: 1.5; margin-bottom: 10px; }
+    .rule-conditions { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+    .rule-cond { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--font-mono); background: var(--accent-purple-dim); color: var(--accent-purple); }
+    .rule-footer { display: flex; align-items: center; justify-content: space-between; }
+    .rule-priority { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: var(--radius-xs); }
+    .priority-high { background: var(--accent-red-dim); color: var(--accent-red); }
+    .priority-medium { background: var(--accent-amber-dim); color: var(--accent-amber); }
+    .priority-low { background: var(--accent-green-dim); color: var(--accent-green); }
+    .btn-icon { width: 28px; height: 28px; border-radius: var(--radius-xs); border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition); }
+    .btn-icon:hover { background: var(--accent-red-dim); color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3); }
+    .add-rule-btn { width: 100%; padding: 12px; background: var(--bg-card); border: 1px dashed rgba(6, 214, 242, 0.25); border-radius: var(--radius); color: var(--accent-cyan); font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: var(--transition); letter-spacing: 0.3px; }
+    .add-rule-btn:hover { background: var(--accent-cyan-dim); border-color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
+    .rule-form { padding: 16px; margin-bottom: 10px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border-accent); box-shadow: var(--glow-cyan); }
+    .rule-form h4 { font-size: 12px; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .rule-form label { display: block; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; margin-top: 10px; }
+    .rule-form label:first-of-type { margin-top: 0; }
+    .rule-form input, .rule-form select { width: 100%; padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; font-family: var(--font-sans); transition: var(--transition); outline: none; }
+    .rule-form input:focus, .rule-form select:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 2px rgba(6, 214, 242, 0.1); }
+    .rule-form input::placeholder { color: var(--text-muted); }
+    .form-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-primary { padding: 8px 20px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); border: none; border-radius: var(--radius-sm); color: white; font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; transition: var(--transition); }
+    .btn-primary:hover { box-shadow: 0 4px 12px rgba(6, 214, 242, 0.3); transform: translateY(-1px); }
+    .btn-secondary { padding: 8px 20px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 11px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; transition: var(--transition); }
+    .btn-secondary:hover { background: var(--bg-elevated); color: var(--text-primary); }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 24px; text-align: center; }
+    .empty-state-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 20px; color: var(--text-muted); }
+    .empty-state h4 { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .empty-state p { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <h1>DRONE INTELLIGENCE</h1>
-      <div id="connectionStatus" class="status-badge disconnected">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="brand-text">
+          <h1>Drone Intelligence</h1>
+          <span>Aerial Perception System</span>
+        </div>
+      </div>
+      <div id="connectionStatus" class="status-pill disconnected">
         <div class="status-dot"></div>
-        <span>Disconnected</span>
+        <span>Offline</span>
       </div>
     </div>
-    <div class="header-stats">
-      <span>FPS: <strong id="statFps">0</strong></span>
-      <span>Objects: <strong id="statObjects">0</strong></span>
-      <span>Persons: <strong id="statPersons">0</strong></span>
-      <span>Events: <strong id="statEvents">0</strong></span>
-      <span>Frame: <strong id="statFrame">0</strong></span>
+    <div class="header-metrics">
+      <div class="metric"><div class="metric-value" id="statFps">--</div><div class="metric-label">Latency</div></div>
+      <div class="metric"><div class="metric-value" id="statObjects">0</div><div class="metric-label">Objects</div></div>
+      <div class="metric"><div class="metric-value" id="statPersons">0</div><div class="metric-label">Persons</div></div>
+      <div class="metric"><div class="metric-value" id="statEvents">0</div><div class="metric-label">Events</div></div>
+      <div class="metric"><div class="metric-value" id="statFrame">0</div><div class="metric-label">Frame</div></div>
     </div>
   </div>
-
-  <!-- Main layout -->
   <div class="main">
-    <!-- Left: Video + bottom bar -->
-    <div class="video-panel">
-      <div class="video-container">
+    <div class="left-panel">
+      <div class="video-section">
         <img id="videoFeed" src="" alt="Video Feed" crossorigin="anonymous">
-        <div class="video-overlay">
-          <div class="overlay-info">
-            <span class="overlay-tag live">LIVE</span>
-            <span id="overlaySource" class="overlay-tag"></span>
+        <div class="scanlines"></div>
+        <canvas id="overlayCanvas" class="video-overlay-canvas"></canvas>
+        <div class="video-hud">
+          <div class="hud-left">
+            <span class="hud-badge live">Live</span>
+            <span id="overlaySource" class="hud-badge source"></span>
+          </div>
+          <div class="hud-right">
+            <span id="hudProcessing" class="hud-stat">-- ms</span>
           </div>
         </div>
-        <canvas id="overlayCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
       </div>
-      <div class="bottom-bar">
-        <div class="zone-map">
-          <h3>Zone Map</h3>
-          <div class="zone-canvas-wrap">
-            <canvas id="zoneCanvas"></canvas>
-          </div>
+      <div class="bottom-panels">
+        <div class="panel-card">
+          <div class="panel-title">Zone Map</div>
+          <div class="zone-canvas-wrap"><canvas id="zoneCanvas"></canvas></div>
         </div>
-        <div class="detection-stats">
-          <h3>Detection Summary</h3>
+        <div class="panel-card">
+          <div class="panel-title">Detection Summary</div>
           <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-value" id="countCar">0</div>
-              <div class="stat-label">Cars</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="countTruck">0</div>
-              <div class="stat-label">Trucks</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="countBus">0</div>
-              <div class="stat-label">Buses</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="countBoat">0</div>
-              <div class="stat-label">Boats</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="countPerson">0</div>
-              <div class="stat-label">Persons</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="countEquip">0</div>
-              <div class="stat-label">Equip.</div>
-            </div>
+            <div class="stat-tile"><div class="stat-value" id="countCar">0</div><div class="stat-label">Cars</div></div>
+            <div class="stat-tile"><div class="stat-value" id="countTruck">0</div><div class="stat-label">Trucks</div></div>
+            <div class="stat-tile"><div class="stat-value" id="countBus">0</div><div class="stat-label">Buses</div></div>
+            <div class="stat-tile"><div class="stat-value" id="countBoat">0</div><div class="stat-label">Boats</div></div>
+            <div class="stat-tile"><div class="stat-value" id="countPerson">0</div><div class="stat-label">Persons</div></div>
+            <div class="stat-tile"><div class="stat-value" id="countEquip">0</div><div class="stat-label">Equip.</div></div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-tabs">
-        <button class="sidebar-tab active" data-tab="events">Events</button>
-        <button class="sidebar-tab" data-tab="tracks">Tracking</button>
-        <button class="sidebar-tab" data-tab="watchlist">Watchlist</button>
+        <button class="sidebar-tab active" data-tab="events">Events <span class="tab-count" id="tabCountEvents">0</span></button>
+        <button class="sidebar-tab" data-tab="tracks">Tracking <span class="tab-count" id="tabCountTracks">0</span></button>
+        <button class="sidebar-tab" data-tab="watchlist">Watchlist <span class="tab-count" id="tabCountRules">0</span></button>
       </div>
       <div class="sidebar-content">
-        <!-- Events Panel -->
         <div id="panelEvents" class="sidebar-panel active">
           <div id="eventsList"></div>
           <div id="eventsEmpty" class="empty-state">
-            <p>Waiting for events...</p>
-            <p>Events will appear when watchlist rules trigger</p>
+            <div class="empty-state-icon">&#9888;</div>
+            <h4>Awaiting Events</h4>
+            <p>Events will appear here when<br>watchlist rules are triggered</p>
           </div>
         </div>
-
-        <!-- Tracks Panel -->
         <div id="panelTracks" class="sidebar-panel">
           <div id="tracksList"></div>
           <div id="tracksEmpty" class="empty-state">
-            <p>No tracked objects</p>
-            <p>Objects will appear when detected</p>
+            <div class="empty-state-icon">&#9678;</div>
+            <h4>No Active Tracks</h4>
+            <p>Tracked objects will appear<br>when detected in the feed</p>
           </div>
         </div>
-
-        <!-- Watchlist Panel -->
         <div id="panelWatchlist" class="sidebar-panel">
           <div id="rulesList"></div>
           <div id="ruleForm" style="display:none;"></div>
-          <button class="add-rule-btn" id="addRuleBtn">+ Add Rule</button>
+          <button class="add-rule-btn" id="addRuleBtn">+ Add New Rule</button>
         </div>
       </div>
     </div>
   </div>
-
   <script>
-    // ──────────────────────────────────────────────────────
-    // Configuration
-    // ──────────────────────────────────────────────────────
-    // Derive URLs from the page origin so the dashboard works from any host
-    const _origin = window.location.origin;  // e.g. http://192.168.1.5:3000
+    const _origin = window.location.origin;
     const BACKEND_URL = _origin;
     const WS_URL = (_origin.replace(/^http/, 'ws')) + '/ws';
-    // Vision service URL – fetched at runtime from the backend config
-    let VISION_URL = 'http://localhost:8000'; // fallback
+    let VISION_URL = 'http://localhost:8000';
     (async () => {
       try {
         const r = await fetch(BACKEND_URL + '/api/health');
         const d = await r.json();
         if (d.vision_url) VISION_URL = d.vision_url;
       } catch (_) {}
-      // Re-set the video feed src once we know the real vision URL
       const vf = document.getElementById('videoFeed');
       if (vf) vf.src = VISION_URL + '/video_feed';
     })();
-
-    // ──────────────────────────────────────────────────────
-    // State
-    // ──────────────────────────────────────────────────────
-    let ws = null;
-    let connected = false;
-    let events = [];
-    let trackedObjects = [];
-    let zones = [];
-    let watchlistRules = [];
-    let frameShape = [540, 960];
-    let totalEvents = 0;
-    let showingRuleForm = false;
-
-    // ──────────────────────────────────────────────────────
-    // DOM Elements
-    // ──────────────────────────────────────────────────────
+    let ws = null, connected = false, events = [], trackedObjects = [], zones = [], watchlistRules = [];
+    let frameShape = [540, 960], totalEvents = 0, showingRuleForm = false;
     const $connectionStatus = document.getElementById('connectionStatus');
     const $videoFeed = document.getElementById('videoFeed');
     const $overlayCanvas = document.getElementById('overlayCanvas');
@@ -744,131 +314,60 @@
     const $tracksEmpty = document.getElementById('tracksEmpty');
     const $rulesList = document.getElementById('rulesList');
     const $overlaySource = document.getElementById('overlaySource');
-
-    // ──────────────────────────────────────────────────────
-    // Video Feed
-    // ──────────────────────────────────────────────────────
+    const $hudProcessing = document.getElementById('hudProcessing');
+    const $tabCountEvents = document.getElementById('tabCountEvents');
+    const $tabCountTracks = document.getElementById('tabCountTracks');
+    const $tabCountRules = document.getElementById('tabCountRules');
     function startVideoFeed() {
       $videoFeed.src = VISION_URL + '/video_feed';
-      $videoFeed.onerror = () => {
-        setTimeout(startVideoFeed, 3000);
-      };
+      $videoFeed.onerror = () => { setTimeout(startVideoFeed, 3000); };
     }
-
-    // ──────────────────────────────────────────────────────
-    // WebSocket Connection
-    // ──────────────────────────────────────────────────────
     function connectWebSocket() {
-      try {
-        ws = new WebSocket(WS_URL);
-      } catch (e) {
-        setTimeout(connectWebSocket, 3000);
-        return;
-      }
-
-      ws.onopen = () => {
-        connected = true;
-        updateConnectionStatus();
-        console.log('[WS] Connected');
-      };
-
-      ws.onclose = () => {
-        connected = false;
-        updateConnectionStatus();
-        console.log('[WS] Disconnected, reconnecting...');
-        setTimeout(connectWebSocket, 3000);
-      };
-
-      ws.onerror = () => {
-        // Will trigger onclose
-      };
-
+      try { ws = new WebSocket(WS_URL); } catch (e) { setTimeout(connectWebSocket, 3000); return; }
+      ws.onopen = () => { connected = true; updateConnectionStatus(); };
+      ws.onclose = () => { connected = false; updateConnectionStatus(); setTimeout(connectWebSocket, 3000); };
+      ws.onerror = () => {};
       ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          handleMessage(data);
-        } catch (e) {
-          console.error('[WS] Parse error:', e);
-        }
+        try { const data = JSON.parse(event.data); handleMessage(data); }
+        catch (e) { console.error('[WS] Parse error:', e); }
       };
     }
-
     function updateConnectionStatus() {
-      if (connected) {
-        $connectionStatus.className = 'status-badge connected';
-        $connectionStatus.querySelector('span').textContent = 'Connected';
-      } else {
-        $connectionStatus.className = 'status-badge disconnected';
-        $connectionStatus.querySelector('span').textContent = 'Disconnected';
-      }
+      if (connected) { $connectionStatus.className = 'status-pill connected'; $connectionStatus.querySelector('span').textContent = 'Online'; }
+      else { $connectionStatus.className = 'status-pill disconnected'; $connectionStatus.querySelector('span').textContent = 'Offline'; }
     }
-
-    // ──────────────────────────────────────────────────────
-    // Message Handler
-    // ──────────────────────────────────────────────────────
     function handleMessage(data) {
       switch (data.type) {
-        case 'frame_update':
-          handleFrameUpdate(data);
-          break;
-        case 'initial_events':
-          handleInitialEvents(data);
-          break;
+        case 'frame_update': handleFrameUpdate(data); break;
+        case 'initial_events': handleInitialEvents(data); break;
       }
     }
-
     function handleFrameUpdate(data) {
-      // Update stats
-      const fps = data.elapsed_ms > 0 ? Math.round(1000 / data.elapsed_ms) : 0;
-      $statFps.textContent = `${data.elapsed_ms?.toFixed(0) || 0}ms`;
+      const ms = data.elapsed_ms?.toFixed(0) || '0';
+      $statFps.textContent = ms + 'ms';
+      $hudProcessing.textContent = ms + ' ms';
       $statFrame.textContent = data.frame_number || 0;
       $statPersons.textContent = data.person_count || 0;
-
-      // Update tracked objects
       trackedObjects = data.tracked_objects || [];
       $statObjects.textContent = trackedObjects.length;
-
-      // Update frame shape
-      if (data.frame_shape) {
-        frameShape = data.frame_shape;
-      }
-
-      // Update detection counts
+      $tabCountTracks.textContent = trackedObjects.length;
+      if (data.frame_shape) frameShape = data.frame_shape;
       updateDetectionCounts(data.detections || [], data.person_count);
-
-      // Render tracks panel
       renderTracks();
-
-      // Handle new events
-      if (data.new_events && data.new_events.length > 0) {
-        for (const evt of data.new_events) {
-          addEvent(evt);
-        }
-      }
-
-      // Draw zone overlay with object positions
+      if (data.new_events && data.new_events.length > 0) { for (const evt of data.new_events) addEvent(evt); }
       drawZoneMap();
     }
-
     function handleInitialEvents(data) {
       if (data.events) {
-        events = data.events;
-        totalEvents = events.length;
+        events = data.events; totalEvents = events.length;
         $statEvents.textContent = totalEvents;
+        $tabCountEvents.textContent = Math.min(totalEvents, 99) || '0';
         renderEvents();
       }
     }
-
-    // ──────────────────────────────────────────────────────
-    // Detection Counts
-    // ──────────────────────────────────────────────────────
     function updateDetectionCounts(detections, personCount) {
       const counts = { car: 0, truck: 0, bus: 0, boat: 0, person: 0, construction_equipment: 0 };
-      for (const d of detections) {
-        if (counts[d.class] !== undefined) {
-          counts[d.class]++;
-        }
-      }
+      for (const d of detections) { if (counts[d.class] !== undefined) counts[d.class]++; }
       document.getElementById('countCar').textContent = counts.car;
       document.getElementById('countTruck').textContent = counts.truck;
       document.getElementById('countBus').textContent = counts.bus;
@@ -876,67 +375,32 @@
       document.getElementById('countPerson').textContent = personCount || counts.person;
       document.getElementById('countEquip').textContent = counts.construction_equipment;
     }
-
-    // ──────────────────────────────────────────────────────
-    // Events
-    // ──────────────────────────────────────────────────────
     function addEvent(evt) {
       events.unshift(evt);
       if (events.length > 200) events = events.slice(0, 200);
       totalEvents++;
       $statEvents.textContent = totalEvents;
+      $tabCountEvents.textContent = Math.min(events.length, 99);
       renderEvents();
     }
-
     function renderEvents() {
-      if (events.length === 0) {
-        $eventsList.innerHTML = '';
-        $eventsEmpty.style.display = 'block';
-        return;
-      }
-
+      if (events.length === 0) { $eventsList.innerHTML = ''; $eventsEmpty.style.display = 'flex'; return; }
       $eventsEmpty.style.display = 'none';
-
       const html = events.slice(0, 50).map(evt => {
         const time = new Date(evt.timestamp * 1000).toLocaleTimeString();
         const priority = evt.priority || 'medium';
         const tags = [];
         if (evt.class) tags.push(evt.class);
-        if (evt.track_id) tags.push(`#${evt.track_id}`);
+        if (evt.track_id) tags.push('#' + evt.track_id);
         if (evt.zone_id) tags.push(evt.zone_id);
-        if (evt.attributes?.color && evt.attributes.color !== 'other') {
-          tags.push(evt.attributes.color);
-        }
-
-        return `
-          <div class="event-item ${priority}">
-            <div class="event-header">
-              <span class="event-type">${evt.type || 'event'}</span>
-              <span class="event-time">${time}</span>
-            </div>
-            <div class="event-desc">${evt.description || evt.rule_name || ''}</div>
-            <div class="event-meta">
-              ${tags.map(t => `<span class="event-tag">${t}</span>`).join('')}
-            </div>
-          </div>
-        `;
+        if (evt.attributes?.color && evt.attributes.color !== 'other') tags.push(evt.attributes.color);
+        return '<div class="event-card ' + priority + '"><div class="event-top"><span class="event-type">' + (evt.type || 'event') + '</span><span class="event-time">' + time + '</span></div><div class="event-desc">' + (evt.description || evt.rule_name || '') + '</div><div class="event-tags">' + tags.map((t, i) => '<span class="tag ' + ['tag-default','tag-purple','tag-green','tag-amber'][i % 4] + '">' + t + '</span>').join('') + '</div></div>';
       }).join('');
-
       $eventsList.innerHTML = html;
     }
-
-    // ──────────────────────────────────────────────────────
-    // Tracks
-    // ──────────────────────────────────────────────────────
     function renderTracks() {
-      if (trackedObjects.length === 0) {
-        $tracksList.innerHTML = '';
-        $tracksEmpty.style.display = 'block';
-        return;
-      }
-
+      if (trackedObjects.length === 0) { $tracksList.innerHTML = ''; $tracksEmpty.style.display = 'flex'; return; }
       $tracksEmpty.style.display = 'none';
-
       const html = trackedObjects.map(obj => {
         const attrs = obj.attributes || {};
         const tags = [];
@@ -944,289 +408,139 @@
         if (attrs.size) tags.push(attrs.size);
         if (obj.direction && obj.direction !== 'stationary') tags.push(obj.direction);
         if (obj.zones && obj.zones.length > 0) tags.push(obj.zones.join(', '));
-
-        return `
-          <div class="track-item">
-            <div class="track-info">
-              <span class="track-id">#${obj.track_id}</span>
-              <span class="track-class">${obj.class}</span>
-              <div class="track-attrs">
-                ${tags.map(t => `<span class="track-attr">${t}</span>`).join('')}
-              </div>
-            </div>
-            <span class="track-dwell">${obj.dwell_time?.toFixed(0) || 0}s</span>
-          </div>
-        `;
+        const dwell = obj.dwell_time?.toFixed(0) || 0;
+        const dwellClass = dwell > 60 ? 'warning' : '';
+        return '<div class="track-card"><div class="track-left"><span class="track-id-badge">#' + obj.track_id + '</span><div class="track-meta"><span class="track-class">' + obj.class + '</span><div class="track-attrs">' + tags.map(t => '<span class="track-attr">' + t + '</span>').join('') + '</div></div></div><span class="track-dwell ' + dwellClass + '">' + dwell + 's</span></div>';
       }).join('');
-
       $tracksList.innerHTML = html;
     }
-
-    // ──────────────────────────────────────────────────────
-    // Zone Map
-    // ──────────────────────────────────────────────────────
     function drawZoneMap() {
       const canvas = $zoneCanvas;
       const container = canvas.parentElement;
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
       const ctx = canvas.getContext('2d');
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Scale factors
       const scaleX = canvas.width / frameShape[1];
       const scaleY = canvas.height / frameShape[0];
-
-      // Draw zones
       for (const zone of zones) {
         const polygon = zone.polygon || [];
         if (polygon.length < 3) continue;
-
         ctx.beginPath();
         ctx.moveTo(polygon[0][0] * scaleX, polygon[0][1] * scaleY);
-        for (let i = 1; i < polygon.length; i++) {
-          ctx.lineTo(polygon[i][0] * scaleX, polygon[i][1] * scaleY);
-        }
+        for (let i = 1; i < polygon.length; i++) ctx.lineTo(polygon[i][0] * scaleX, polygon[i][1] * scaleY);
         ctx.closePath();
-
-        const color = zone.color || '#00ff00';
-        ctx.fillStyle = color + '20';
-        ctx.fill();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Zone label
+        const color = zone.color || '#06d6f2';
+        ctx.fillStyle = color + '18'; ctx.fill();
+        ctx.strokeStyle = color + '80'; ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
         const cx = polygon.reduce((s, p) => s + p[0], 0) / polygon.length * scaleX;
         const cy = polygon.reduce((s, p) => s + p[1], 0) / polygon.length * scaleY;
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(zone.name || zone.id, cx, cy);
+        const label = zone.name || zone.id;
+        ctx.font = '600 9px Inter, sans-serif';
+        const tm = ctx.measureText(label);
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.beginPath(); ctx.roundRect(cx - tm.width / 2 - 5, cy - 6, tm.width + 10, 14, 3); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(label, cx, cy + 1);
       }
-
-      // Draw tracked objects as dots
-      const classColors = {
-        car: '#00ff00',
-        truck: '#ffa500',
-        bus: '#ff00ff',
-        boat: '#00ffff',
-        person: '#ff0000',
-        construction_equipment: '#ff8c00',
-      };
-
+      const classColors = { car: '#10b981', truck: '#f59e0b', bus: '#8b5cf6', boat: '#06d6f2', person: '#ef4444', construction_equipment: '#f97316' };
       for (const obj of trackedObjects) {
         if (!obj.center) continue;
-        const x = obj.center[0] * scaleX;
-        const y = obj.center[1] * scaleY;
-        const color = classColors[obj.class] || '#888888';
-
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '9px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`#${obj.track_id}`, x, y - 7);
+        const x = obj.center[0] * scaleX, y = obj.center[1] * scaleY;
+        const color = classColors[obj.class] || '#6b7280';
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = color + '30'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 0.5; ctx.stroke();
+        ctx.font = '600 8px JetBrains Mono, monospace';
+        ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
+        ctx.fillText('#' + obj.track_id, x, y - 9);
       }
     }
-
-    // ──────────────────────────────────────────────────────
-    // Watchlist
-    // ──────────────────────────────────────────────────────
     async function loadWatchlist() {
       try {
         const res = await fetch(BACKEND_URL + '/api/config/watchlist');
         const data = await res.json();
         watchlistRules = data.watchlist?.rules || [];
+        $tabCountRules.textContent = watchlistRules.length;
         renderWatchlist();
-      } catch (e) {
-        console.error('[Watchlist] Load error:', e);
-      }
+      } catch (e) { console.error('[Watchlist] Load error:', e); }
     }
-
     function renderWatchlist() {
+      $tabCountRules.textContent = watchlistRules.length;
       const html = watchlistRules.map(rule => {
         const conditions = rule.conditions || {};
         const condTags = [];
-        if (conditions.class) condTags.push(`class: ${conditions.class.join(', ')}`);
-        if (conditions.color) condTags.push(`color: ${conditions.color.join(', ')}`);
-        if (conditions.zone) condTags.push(`zone: ${conditions.zone.join(', ')}`);
-        if (conditions.dwell_time_min) condTags.push(`dwell > ${conditions.dwell_time_min}s`);
-        if (conditions.direction) condTags.push(`dir: ${conditions.direction.join(', ')}`);
-        if (conditions.min_count) condTags.push(`count >= ${conditions.min_count}`);
-
-        return `
-          <div class="rule-item">
-            <div class="rule-header">
-              <span class="rule-name">${rule.name}</span>
-              <button class="rule-toggle ${rule.enabled ? 'enabled' : 'disabled'}"
-                      onclick="toggleRule('${rule.id}')"></button>
-            </div>
-            <div class="rule-desc">${rule.description || ''}</div>
-            <div class="rule-conditions">
-              ${condTags.map(t => `<span class="rule-cond">${t}</span>`).join('')}
-              <span class="rule-cond">${rule.event_type}</span>
-              <span class="rule-cond">${rule.priority} priority</span>
-            </div>
-            <div class="rule-actions">
-              <button class="btn-small danger" onclick="deleteRule('${rule.id}')">Delete</button>
-            </div>
-          </div>
-        `;
+        if (conditions.class) condTags.push('class: ' + conditions.class.join(', '));
+        if (conditions.color) condTags.push('color: ' + conditions.color.join(', '));
+        if (conditions.zone) condTags.push('zone: ' + conditions.zone.join(', '));
+        if (conditions.dwell_time_min) condTags.push('dwell > ' + conditions.dwell_time_min + 's');
+        if (conditions.direction) condTags.push('dir: ' + conditions.direction.join(', '));
+        if (conditions.min_count) condTags.push('count >= ' + conditions.min_count);
+        const priorityClass = 'priority-' + (rule.priority || 'medium');
+        return '<div class="rule-card ' + (rule.enabled ? '' : 'disabled-rule') + '"><div class="rule-top"><span class="rule-name">' + rule.name + '</span><button class="toggle-switch ' + (rule.enabled ? 'on' : 'off') + "\" onclick=\"toggleRule('" + rule.id + "')\">" + '</button></div><div class="rule-desc">' + (rule.description || '') + '</div><div class="rule-conditions">' + condTags.map(t => '<span class="rule-cond">' + t + '</span>').join('') + '<span class="rule-cond">' + rule.event_type + '</span></div><div class="rule-footer"><span class="rule-priority ' + priorityClass + '">' + (rule.priority || 'medium') + "</span><button class=\"btn-icon\" onclick=\"deleteRule('" + rule.id + "')\" title=\"Delete rule\">&#215;</button></div></div>";
       }).join('');
-
       $rulesList.innerHTML = html;
     }
-
     async function toggleRule(ruleId) {
       const rule = watchlistRules.find(r => r.id === ruleId);
       if (!rule) return;
-
       rule.enabled = !rule.enabled;
-
       try {
-        await fetch(BACKEND_URL + `/api/config/watchlist/rules/${ruleId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled: rule.enabled }),
-        });
+        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + ruleId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: rule.enabled }) });
         renderWatchlist();
-      } catch (e) {
-        console.error('[Watchlist] Toggle error:', e);
-      }
+      } catch (e) { console.error('[Watchlist] Toggle error:', e); }
     }
-
     async function deleteRule(ruleId) {
       try {
-        await fetch(BACKEND_URL + `/api/config/watchlist/rules/${ruleId}`, {
-          method: 'DELETE',
-        });
+        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + ruleId, { method: 'DELETE' });
         watchlistRules = watchlistRules.filter(r => r.id !== ruleId);
         renderWatchlist();
-      } catch (e) {
-        console.error('[Watchlist] Delete error:', e);
-      }
+      } catch (e) { console.error('[Watchlist] Delete error:', e); }
     }
-
-    // ──────────────────────────────────────────────────────
-    // Add Rule Form
-    // ──────────────────────────────────────────────────────
     document.getElementById('addRuleBtn').addEventListener('click', () => {
       showingRuleForm = !showingRuleForm;
       const $form = document.getElementById('ruleForm');
-
       if (showingRuleForm) {
         $form.style.display = 'block';
-        $form.innerHTML = `
-          <div class="rule-form">
-            <label>Rule Name</label>
-            <input type="text" id="newRuleName" placeholder="e.g. Red truck in zone B">
-            <label>Vehicle Classes (comma-separated)</label>
-            <input type="text" id="newRuleClasses" placeholder="car, truck, bus, boat">
-            <label>Colors (comma-separated, leave empty for any)</label>
-            <input type="text" id="newRuleColors" placeholder="black, white, red, blue">
-            <label>Zones (comma-separated, leave empty for any)</label>
-            <input type="text" id="newRuleZones" placeholder="zone_a, zone_b">
-            <label>Min Dwell Time (seconds, 0 for none)</label>
-            <input type="number" id="newRuleDwell" value="0" min="0">
-            <label>Event Type</label>
-            <select id="newRuleEventType">
-              <option value="watchlist_match">Watchlist Match</option>
-              <option value="dwell_alert">Dwell Alert</option>
-              <option value="zone_entry">Zone Entry</option>
-            </select>
-            <label>Priority</label>
-            <select id="newRulePriority">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-            </select>
-            <div class="rule-form-actions">
-              <button class="btn-primary" onclick="submitNewRule()">Add Rule</button>
-              <button class="btn-secondary" onclick="cancelNewRule()">Cancel</button>
-            </div>
-          </div>
-        `;
-      } else {
-        $form.style.display = 'none';
-        $form.innerHTML = '';
-      }
+        $form.innerHTML = '<div class="rule-form"><h4>Create New Rule</h4><label>Rule Name</label><input type="text" id="newRuleName" placeholder="e.g. Red truck in zone B"><label>Vehicle Classes (comma-separated)</label><input type="text" id="newRuleClasses" placeholder="car, truck, bus, boat"><label>Colors (comma-separated, leave empty for any)</label><input type="text" id="newRuleColors" placeholder="black, white, red, blue"><label>Zones (comma-separated, leave empty for any)</label><input type="text" id="newRuleZones" placeholder="zone_a, zone_b"><label>Min Dwell Time (seconds, 0 for none)</label><input type="number" id="newRuleDwell" value="0" min="0"><label>Event Type</label><select id="newRuleEventType"><option value="watchlist_match">Watchlist Match</option><option value="dwell_alert">Dwell Alert</option><option value="zone_entry">Zone Entry</option></select><label>Priority</label><select id="newRulePriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select><div class="form-actions"><button class="btn-primary" onclick="submitNewRule()">Create Rule</button><button class="btn-secondary" onclick="cancelNewRule()">Cancel</button></div></div>';
+      } else { $form.style.display = 'none'; $form.innerHTML = ''; }
     });
-
     async function submitNewRule() {
       const name = document.getElementById('newRuleName').value.trim();
       if (!name) return alert('Please enter a rule name');
-
       const classesStr = document.getElementById('newRuleClasses').value.trim();
       const colorsStr = document.getElementById('newRuleColors').value.trim();
       const zonesStr = document.getElementById('newRuleZones').value.trim();
       const dwell = parseInt(document.getElementById('newRuleDwell').value) || 0;
       const eventType = document.getElementById('newRuleEventType').value;
       const priority = document.getElementById('newRulePriority').value;
-
       const conditions = {};
       if (classesStr) conditions.class = classesStr.split(',').map(s => s.trim()).filter(Boolean);
       if (colorsStr) conditions.color = colorsStr.split(',').map(s => s.trim()).filter(Boolean);
       if (zonesStr) conditions.zone = zonesStr.split(',').map(s => s.trim()).filter(Boolean);
       if (dwell > 0) conditions.dwell_time_min = dwell;
-
-      const rule = {
-        name,
-        enabled: true,
-        conditions,
-        event_type: eventType,
-        priority,
-        description: name,
-      };
-
+      const rule = { name, enabled: true, conditions, event_type: eventType, priority, description: name };
       try {
-        const res = await fetch(BACKEND_URL + '/api/config/watchlist/rules', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(rule),
-        });
+        const res = await fetch(BACKEND_URL + '/api/config/watchlist/rules', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rule) });
         const data = await res.json();
-        if (data.rule) {
-          watchlistRules.push(data.rule);
-          renderWatchlist();
-        }
+        if (data.rule) { watchlistRules.push(data.rule); renderWatchlist(); }
         cancelNewRule();
-      } catch (e) {
-        console.error('[Watchlist] Add rule error:', e);
-      }
+      } catch (e) { console.error('[Watchlist] Add rule error:', e); }
     }
-
     function cancelNewRule() {
       showingRuleForm = false;
       document.getElementById('ruleForm').style.display = 'none';
       document.getElementById('ruleForm').innerHTML = '';
     }
-
-    // ──────────────────────────────────────────────────────
-    // Load Zones
-    // ──────────────────────────────────────────────────────
     async function loadZones() {
       try {
         const res = await fetch(BACKEND_URL + '/api/config/zones');
         const data = await res.json();
         zones = data.zones?.zones || [];
         drawZoneMap();
-      } catch (e) {
-        console.error('[Zones] Load error:', e);
-        setTimeout(loadZones, 5000);
-      }
+      } catch (e) { console.error('[Zones] Load error:', e); setTimeout(loadZones, 5000); }
     }
-
-    // ──────────────────────────────────────────────────────
-    // Sidebar Tabs
-    // ──────────────────────────────────────────────────────
     document.querySelectorAll('.sidebar-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
@@ -1235,34 +549,14 @@
         document.getElementById('panel' + capitalize(tab.dataset.tab)).classList.add('active');
       });
     });
-
-    function capitalize(s) {
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
-    // ──────────────────────────────────────────────────────
-    // Initialize
-    // ──────────────────────────────────────────────────────
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
     function init() {
-      startVideoFeed();
-      connectWebSocket();
-      loadWatchlist();
-      loadZones();
-
-      // Periodically reload zones
+      startVideoFeed(); connectWebSocket(); loadWatchlist(); loadZones();
       setInterval(loadZones, 30000);
-
-      // Get video source info
-      fetch(VISION_URL + '/health')
-        .then(r => r.json())
-        .then(data => {
-          if (data.config?.video_source) {
-            $overlaySource.textContent = data.config.video_source;
-          }
-        })
-        .catch(() => {});
+      fetch(VISION_URL + '/health').then(r => r.json()).then(data => {
+        if (data.config?.video_source) $overlaySource.textContent = data.config.video_source;
+      }).catch(() => {});
     }
-
     init();
   </script>
 </body>
