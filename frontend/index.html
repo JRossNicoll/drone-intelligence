@@ -118,8 +118,8 @@
       letter-spacing: 1.2px; margin-bottom: 10px;
       padding-left: 10px; border-left: 2px solid var(--accent);
     }
-    .zone-box { flex:1; background: var(--bg-2); border-radius: var(--r-sm); border: 1px solid var(--border); overflow: hidden; position: relative; }
-    .zone-box canvas { width:100%; height:100%; }
+    .zone-box { flex:1; background: var(--bg-2); border-radius: var(--r-sm); border: 1px solid var(--border); overflow: hidden; position: relative; min-height: 0; }
+    .zone-box canvas { display:block; width:100%; height:100%; }
     .det-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; }
     .det-cell {
       background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-sm);
@@ -518,7 +518,8 @@
 
     function drawZones() {
       const c = $zoneCanvas, box = c.parentElement;
-      c.width = box.clientWidth; c.height = box.clientHeight;
+      const rect = box.getBoundingClientRect();
+      c.width = Math.round(rect.width); c.height = Math.round(rect.height);
       const ctx = c.getContext('2d');
       ctx.clearRect(0, 0, c.width, c.height);
       const sx = c.width / frameShape[1], sy = c.height / frameShape[0];
