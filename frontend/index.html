@@ -6,283 +6,377 @@
   <title>Drone Intelligence - Aerial Perception System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #06080d;
-      --bg-secondary: #0c1017;
-      --bg-card: #111720;
-      --bg-card-hover: #161d2a;
-      --bg-elevated: #1a2234;
-      --bg-input: #0d1219;
-      --text-primary: #e8ecf4;
-      --text-secondary: #7a8ba8;
-      --text-muted: #4a5568;
-      --accent-cyan: #06d6f2;
-      --accent-cyan-dim: rgba(6, 214, 242, 0.12);
-      --accent-green: #10b981;
-      --accent-green-dim: rgba(16, 185, 129, 0.12);
-      --accent-red: #ef4444;
-      --accent-red-dim: rgba(239, 68, 68, 0.12);
-      --accent-amber: #f59e0b;
-      --accent-amber-dim: rgba(245, 158, 11, 0.12);
-      --accent-purple: #8b5cf6;
-      --accent-purple-dim: rgba(139, 92, 246, 0.12);
-      --accent-blue: #3b82f6;
-      --accent-blue-dim: rgba(59, 130, 246, 0.12);
+      --bg-0: #0a0c10;
+      --bg-1: #0f1218;
+      --bg-2: #151a22;
+      --bg-3: #1b2130;
+      --bg-hover: #1e2433;
+      --bg-input: #0c0f14;
+      --text-0: #f0f2f5;
+      --text-1: #c0c8d8;
+      --text-2: #6b7a94;
+      --text-3: #3e4b62;
+      --accent: #0ea5e9;
+      --accent-dim: rgba(14, 165, 233, 0.10);
+      --accent-border: rgba(14, 165, 233, 0.18);
+      --green: #22c55e;
+      --green-dim: rgba(34, 197, 94, 0.10);
+      --green-border: rgba(34, 197, 94, 0.20);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.10);
+      --red-border: rgba(239, 68, 68, 0.20);
+      --amber: #eab308;
+      --amber-dim: rgba(234, 179, 8, 0.10);
+      --amber-border: rgba(234, 179, 8, 0.20);
+      --purple: #a855f7;
+      --purple-dim: rgba(168, 85, 247, 0.10);
       --border: rgba(255, 255, 255, 0.06);
-      --border-accent: rgba(6, 214, 242, 0.2);
-      --glow-cyan: 0 0 20px rgba(6, 214, 242, 0.15);
-      --glow-green: 0 0 12px rgba(16, 185, 129, 0.2);
-      --glow-red: 0 0 12px rgba(239, 68, 68, 0.2);
-      --radius: 10px;
-      --radius-sm: 6px;
-      --radius-xs: 4px;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
-      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --border-light: rgba(255, 255, 255, 0.09);
+      --r: 8px;
+      --r-sm: 6px;
+      --r-xs: 4px;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', monospace;
+      --ease: 0.15s ease;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: var(--font-sans);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      overflow: hidden;
-      height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--sans); background: var(--bg-0); color: var(--text-0); overflow: hidden; height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    /* ── Header ── */
     .header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 20px; background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border); height: 52px;
-      position: relative; z-index: 10;
+      padding: 0 24px; height: 48px;
+      background: var(--bg-1); border-bottom: 1px solid var(--border);
     }
-    .header::after {
-      content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent); opacity: 0.3;
-    }
-    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-left { display: flex; align-items: center; gap: 20px; }
     .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: var(--glow-cyan);
+    .brand-mark {
+      width: 28px; height: 28px; border-radius: var(--r-sm);
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
     }
-    .brand-icon svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .brand-text h1 { font-size: 14px; font-weight: 700; letter-spacing: 1.5px; color: var(--text-primary); text-transform: uppercase; }
-    .brand-text span { font-size: 9px; font-weight: 500; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
-    .status-pill { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; transition: var(--transition); }
-    .status-pill.connected { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.25); }
-    .status-pill.disconnected { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.25); }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
-    .connected .status-dot { background: var(--accent-green); box-shadow: var(--glow-green); }
-    .disconnected .status-dot { background: var(--accent-red); box-shadow: var(--glow-red); }
-    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
-    .header-metrics { display: flex; gap: 4px; }
-    .metric { display: flex; flex-direction: column; align-items: center; padding: 4px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); min-width: 68px; }
-    .metric-value { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent-cyan); }
-    .metric-label { font-size: 8px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 1px; }
-    .main { display: grid; grid-template-columns: 1fr 380px; height: calc(100vh - 52px); }
-    .left-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
-    .video-section { flex: 1; position: relative; background: #000; overflow: hidden; min-height: 0; }
-    .video-section img { width: 100%; height: 100%; object-fit: contain; display: block; }
-    .video-hud { position: absolute; top: 0; left: 0; right: 0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%); }
-    .hud-left { display: flex; flex-direction: column; gap: 6px; }
-    .hud-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--radius-xs); font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; backdrop-filter: blur(8px); width: fit-content; }
-    .hud-badge.live { background: rgba(239, 68, 68, 0.85); color: white; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
-    .hud-badge.live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: white; animation: pulse 1.5s ease-in-out infinite; }
-    .hud-badge.source { background: rgba(0,0,0,0.6); color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.1); font-family: var(--font-mono); font-weight: 500; letter-spacing: 0; text-transform: none; }
-    .hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-    .hud-stat { padding: 3px 10px; border-radius: var(--radius-xs); background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--accent-cyan); }
-    .video-overlay-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-    .video-section::before, .video-section::after { content: ''; position: absolute; width: 24px; height: 24px; border-color: var(--accent-cyan); border-style: solid; border-width: 0; opacity: 0.4; z-index: 2; pointer-events: none; }
-    .video-section::before { top: 8px; left: 8px; border-top-width: 2px; border-left-width: 2px; }
-    .video-section::after { bottom: 8px; right: 8px; border-bottom-width: 2px; border-right-width: 2px; }
-    .scanlines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px); }
-    .bottom-panels { display: grid; grid-template-columns: 1fr 1fr; height: 190px; border-top: 1px solid var(--border); gap: 1px; background: var(--border); }
-    .panel-card { background: var(--bg-secondary); padding: 14px 16px; display: flex; flex-direction: column; }
-    .panel-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-    .panel-title::before { content: ''; width: 3px; height: 12px; border-radius: 2px; background: var(--accent-cyan); }
-    .zone-canvas-wrap { flex: 1; position: relative; background: var(--bg-card); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
-    .zone-canvas-wrap canvas { width: 100%; height: 100%; }
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; flex: 1; }
-    .stat-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: var(--transition); }
-    .stat-tile:hover { border-color: var(--border-accent); background: var(--bg-card-hover); }
-    .stat-tile .stat-value { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--accent-cyan); line-height: 1; }
-    .stat-tile .stat-label { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-    .sidebar { display: flex; flex-direction: column; background: var(--bg-secondary); border-left: 1px solid var(--border); overflow: hidden; }
-    .sidebar-tabs { display: flex; padding: 4px; background: var(--bg-primary); border-bottom: 1px solid var(--border); gap: 2px; }
-    .sidebar-tab { flex: 1; padding: 9px 8px; text-align: center; font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; border: none; background: transparent; border-radius: var(--radius-sm); transition: var(--transition); letter-spacing: 0.3px; }
-    .sidebar-tab:hover { color: var(--text-secondary); background: var(--bg-card); }
-    .sidebar-tab.active { color: var(--accent-cyan); background: var(--bg-card); box-shadow: inset 0 -2px 0 var(--accent-cyan); }
-    .sidebar-tab .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 16px; padding: 0 4px; border-radius: 8px; font-size: 9px; font-weight: 700; font-family: var(--font-mono); margin-left: 4px; background: var(--bg-elevated); color: var(--text-muted); }
-    .sidebar-tab.active .tab-count { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
-    .sidebar-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
-    .sidebar-panel { display: none; padding: 12px; }
-    .sidebar-panel.active { display: block; }
-    .event-card { padding: 12px 14px; margin-bottom: 8px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); border-left: 3px solid var(--accent-blue); font-size: 12px; animation: cardSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1); transition: var(--transition); }
-    .event-card:hover { background: var(--bg-card-hover); border-color: rgba(255,255,255,0.1); border-left-width: 3px; }
-    @keyframes cardSlide { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    .event-card.high { border-left-color: var(--accent-red); }
-    .event-card.medium { border-left-color: var(--accent-amber); }
-    .event-card.low { border-left-color: var(--accent-green); }
-    .event-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .event-type { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-primary); }
-    .event-time { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
-    .event-desc { color: var(--text-secondary); font-size: 11px; line-height: 1.5; margin-bottom: 8px; }
-    .event-tags { display: flex; gap: 5px; flex-wrap: wrap; }
-    .tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--font-mono); }
-    .tag-default { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
-    .tag-purple { background: var(--accent-purple-dim); color: var(--accent-purple); }
-    .tag-green { background: var(--accent-green-dim); color: var(--accent-green); }
-    .tag-amber { background: var(--accent-amber-dim); color: var(--accent-amber); }
-    .track-card { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-bottom: 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; transition: var(--transition); }
-    .track-card:hover { background: var(--bg-card-hover); border-color: rgba(255,255,255,0.1); }
-    .track-left { display: flex; align-items: center; gap: 10px; }
-    .track-id-badge { font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: var(--accent-cyan); min-width: 36px; text-align: center; padding: 3px 6px; border-radius: var(--radius-xs); background: var(--accent-cyan-dim); }
-    .track-meta { display: flex; flex-direction: column; gap: 3px; }
-    .track-class { font-weight: 600; color: var(--text-primary); font-size: 12px; text-transform: capitalize; }
-    .track-attrs { display: flex; gap: 4px; }
-    .track-attr { padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; background: var(--bg-elevated); color: var(--text-muted); font-family: var(--font-mono); }
-    .track-dwell { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-muted); }
-    .track-dwell.warning { color: var(--accent-amber); }
-    .rule-card { padding: 14px; margin-bottom: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); transition: var(--transition); }
-    .rule-card:hover { background: var(--bg-card-hover); border-color: rgba(255,255,255,0.1); }
-    .rule-card.disabled-rule { opacity: 0.5; }
-    .rule-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .rule-name { font-weight: 700; font-size: 13px; color: var(--text-primary); }
-    .toggle-switch { width: 40px; height: 22px; border-radius: 11px; border: none; cursor: pointer; position: relative; transition: var(--transition); flex-shrink: 0; }
-    .toggle-switch.on { background: var(--accent-green); box-shadow: var(--glow-green); }
-    .toggle-switch.off { background: var(--bg-primary); border: 1px solid var(--border); }
-    .toggle-switch::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: white; top: 3px; transition: var(--transition); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-    .toggle-switch.on::after { left: 21px; }
-    .toggle-switch.off::after { left: 3px; }
-    .rule-desc { color: var(--text-secondary); font-size: 11px; line-height: 1.5; margin-bottom: 10px; }
-    .rule-conditions { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
-    .rule-cond { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--font-mono); background: var(--accent-purple-dim); color: var(--accent-purple); }
-    .rule-footer { display: flex; align-items: center; justify-content: space-between; }
-    .rule-priority { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: var(--radius-xs); }
-    .priority-high { background: var(--accent-red-dim); color: var(--accent-red); }
-    .priority-medium { background: var(--accent-amber-dim); color: var(--accent-amber); }
-    .priority-low { background: var(--accent-green-dim); color: var(--accent-green); }
-    .btn-icon { width: 28px; height: 28px; border-radius: var(--radius-xs); border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition); }
-    .btn-icon:hover { background: var(--accent-red-dim); color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3); }
-    .add-rule-btn { width: 100%; padding: 12px; background: var(--bg-card); border: 1px dashed rgba(6, 214, 242, 0.25); border-radius: var(--radius); color: var(--accent-cyan); font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: var(--transition); letter-spacing: 0.3px; }
-    .add-rule-btn:hover { background: var(--accent-cyan-dim); border-color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
-    .rule-form { padding: 16px; margin-bottom: 10px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border-accent); box-shadow: var(--glow-cyan); }
-    .rule-form h4 { font-size: 12px; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .rule-form label { display: block; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; margin-top: 10px; }
-    .rule-form label:first-of-type { margin-top: 0; }
-    .rule-form input, .rule-form select { width: 100%; padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; font-family: var(--font-sans); transition: var(--transition); outline: none; }
-    .rule-form input:focus, .rule-form select:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 2px rgba(6, 214, 242, 0.1); }
-    .rule-form input::placeholder { color: var(--text-muted); }
-    .form-actions { display: flex; gap: 8px; margin-top: 14px; }
-    .btn-primary { padding: 8px 20px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); border: none; border-radius: var(--radius-sm); color: white; font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; transition: var(--transition); }
-    .btn-primary:hover { box-shadow: 0 4px 12px rgba(6, 214, 242, 0.3); transform: translateY(-1px); }
-    .btn-secondary { padding: 8px 20px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 11px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; transition: var(--transition); }
-    .btn-secondary:hover { background: var(--bg-elevated); color: var(--text-primary); }
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 24px; text-align: center; }
-    .empty-state-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 20px; color: var(--text-muted); }
-    .empty-state h4 { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
-    .empty-state p { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
-    ::-webkit-scrollbar { width: 5px; }
+    .brand-mark svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .brand-name { font-size: 13px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-0); }
+    .brand-sub { font-size: 9px; font-weight: 500; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 100px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+    }
+    .status-pill.on { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+    .status-pill.off { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.on .status-dot { background: var(--green); animation: blink 2s infinite; }
+    .status-pill.off .status-dot { background: var(--red); }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.4} }
+
+    .header-stats { display: flex; gap: 2px; }
+    .hstat {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 4px 14px; min-width: 64px;
+      background: var(--bg-2); border-radius: var(--r-sm); border: 1px solid var(--border);
+    }
+    .hstat-val { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); line-height: 1.2; }
+    .hstat-lbl { font-size: 8px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
+
+    /* ── Layout ── */
+    .layout { display: grid; grid-template-columns: 1fr 360px; height: calc(100vh - 48px); }
+    .content { display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Video ── */
+    .video-wrap { flex: 1; position: relative; background: #000; min-height: 0; overflow: hidden; }
+    .video-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .video-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .video-hud {
+      position: absolute; top: 0; left: 0; right: 0; padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      pointer-events: none; z-index: 2;
+    }
+    .hud-col { display: flex; flex-direction: column; gap: 4px; }
+    .hud-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: var(--r-xs);
+      font-size: 10px; font-weight: 600; backdrop-filter: blur(12px);
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08);
+      width: fit-content;
+    }
+    .hud-pill.live { background: rgba(239,68,68,0.80); color: #fff; border-color: transparent; letter-spacing: 0.6px; text-transform: uppercase; }
+    .hud-pill.live::before { content:''; width:5px; height:5px; border-radius:50%; background:#fff; animation: blink 1.2s infinite; }
+    .hud-pill.data { color: var(--text-1); font-family: var(--mono); font-weight: 500; font-size: 10px; letter-spacing: 0; }
+
+    /* ── Bottom panels ── */
+    .bottom-row {
+      display: grid; grid-template-columns: 1fr 1fr; height: 180px;
+      border-top: 1px solid var(--border);
+    }
+    .bpanel { padding: 12px 16px; background: var(--bg-1); display: flex; flex-direction: column; }
+    .bpanel + .bpanel { border-left: 1px solid var(--border); }
+    .bpanel-title {
+      font-size: 10px; font-weight: 700; color: var(--text-2); text-transform: uppercase;
+      letter-spacing: 1.2px; margin-bottom: 10px;
+      padding-left: 10px; border-left: 2px solid var(--accent);
+    }
+    .zone-box { flex:1; background: var(--bg-2); border-radius: var(--r-sm); border: 1px solid var(--border); overflow: hidden; position: relative; }
+    .zone-box canvas { width:100%; height:100%; }
+    .det-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; }
+    .det-cell {
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-sm);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 6px; transition: var(--ease);
+    }
+    .det-cell:hover { border-color: var(--accent-border); }
+    .det-num { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text-0); line-height: 1; }
+    .det-lbl { font-size: 9px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+    /* ── Sidebar ── */
+    .sidebar { display: flex; flex-direction: column; background: var(--bg-1); border-left: 1px solid var(--border); overflow: hidden; }
+    .tabs { display: flex; background: var(--bg-0); border-bottom: 1px solid var(--border); }
+    .tab {
+      flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 600;
+      color: var(--text-3); cursor: pointer; border: none; background: none;
+      border-bottom: 2px solid transparent; transition: var(--ease); letter-spacing: 0.2px;
+    }
+    .tab:hover { color: var(--text-2); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab .cnt {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 16px; height: 14px; padding: 0 4px; border-radius: 7px;
+      font-size: 9px; font-weight: 700; font-family: var(--mono); margin-left: 4px;
+      background: var(--bg-3); color: var(--text-3);
+    }
+    .tab.active .cnt { background: var(--accent-dim); color: var(--accent); }
+    .panels { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .panel { display: none; padding: 10px; }
+    .panel.active { display: block; }
+
+    /* ── Cards (uniform) ── */
+    .card {
+      padding: 12px; margin-bottom: 6px; background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--r); transition: var(--ease);
+    }
+    .card:hover { background: var(--bg-hover); border-color: var(--border-light); }
+    .card-row { display: flex; justify-content: space-between; align-items: center; }
+    .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-0); }
+    .card-time { font-family: var(--mono); font-size: 10px; color: var(--text-3); }
+    .card-body { color: var(--text-1); font-size: 11px; line-height: 1.5; margin: 6px 0 8px; }
+    .card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .chip {
+      padding: 2px 7px; border-radius: var(--r-xs); font-size: 9px; font-weight: 600;
+      font-family: var(--mono); letter-spacing: 0.2px;
+    }
+    .chip-a { background: var(--accent-dim); color: var(--accent); }
+    .chip-p { background: var(--purple-dim); color: var(--purple); }
+    .chip-g { background: var(--green-dim); color: var(--green); }
+    .chip-w { background: var(--amber-dim); color: var(--amber); }
+
+    /* Event card priority stripe */
+    .card.ev { border-left: 3px solid var(--accent); }
+    .card.ev.p-high { border-left-color: var(--red); }
+    .card.ev.p-med { border-left-color: var(--amber); }
+    .card.ev.p-low { border-left-color: var(--green); }
+
+    /* Track card */
+    .trk { display: flex; align-items: center; gap: 10px; }
+    .trk-id {
+      font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--accent);
+      background: var(--accent-dim); padding: 3px 7px; border-radius: var(--r-xs);
+      min-width: 32px; text-align: center;
+    }
+    .trk-info { flex: 1; }
+    .trk-cls { font-size: 12px; font-weight: 600; color: var(--text-0); text-transform: capitalize; }
+    .trk-attrs { display: flex; gap: 3px; margin-top: 2px; }
+    .trk-attr { font-size: 9px; font-weight: 600; font-family: var(--mono); color: var(--text-3); background: var(--bg-3); padding: 1px 5px; border-radius: 3px; }
+    .trk-dwell { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--text-3); }
+    .trk-dwell.warn { color: var(--amber); }
+
+    /* Rule card */
+    .rule-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .rule-name { font-size: 12px; font-weight: 700; color: var(--text-0); }
+    .toggle {
+      width: 36px; height: 20px; border-radius: 10px; border: none; cursor: pointer;
+      position: relative; transition: var(--ease); flex-shrink: 0;
+    }
+    .toggle.on { background: var(--green); }
+    .toggle.off { background: var(--bg-0); border: 1px solid var(--border-light); }
+    .toggle::after {
+      content:''; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+      background: #fff; top: 3px; transition: var(--ease);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .toggle.on::after { left: 19px; }
+    .toggle.off::after { left: 3px; }
+    .rule-desc { color: var(--text-2); font-size: 11px; margin: 4px 0 8px; line-height: 1.4; }
+    .rule-conds { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+    .rule-foot { display: flex; justify-content: space-between; align-items: center; }
+    .badge {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 2px 7px; border-radius: var(--r-xs);
+    }
+    .badge-hi { background: var(--red-dim); color: var(--red); }
+    .badge-md { background: var(--amber-dim); color: var(--amber); }
+    .badge-lo { background: var(--green-dim); color: var(--green); }
+    .del-btn {
+      width: 24px; height: 24px; border-radius: var(--r-xs);
+      border: 1px solid var(--border); background: transparent; color: var(--text-3);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: var(--ease);
+    }
+    .del-btn:hover { background: var(--red-dim); color: var(--red); border-color: var(--red-border); }
+
+    /* Add rule */
+    .add-btn {
+      width: 100%; padding: 10px; margin-top: 6px;
+      background: var(--bg-2); border: 1px dashed var(--accent-border);
+      border-radius: var(--r); color: var(--accent);
+      font-size: 11px; font-weight: 600; cursor: pointer; transition: var(--ease);
+    }
+    .add-btn:hover { background: var(--accent-dim); }
+    .form-wrap {
+      padding: 14px; margin-bottom: 8px; background: var(--bg-2);
+      border-radius: var(--r); border: 1px solid var(--accent-border);
+    }
+    .form-wrap h4 {
+      font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .form-wrap label {
+      display: block; font-size: 10px; font-weight: 600; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.4px; margin: 8px 0 3px;
+    }
+    .form-wrap label:first-of-type { margin-top: 0; }
+    .form-wrap input, .form-wrap select {
+      width: 100%; padding: 7px 10px; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      color: var(--text-0); font-size: 12px; font-family: var(--sans);
+      outline: none; transition: var(--ease);
+    }
+    .form-wrap input:focus, .form-wrap select:focus { border-color: var(--accent); }
+    .form-wrap input::placeholder { color: var(--text-3); }
+    .form-btns { display: flex; gap: 6px; margin-top: 12px; }
+    .btn-p {
+      padding: 7px 18px; background: var(--accent); border: none; border-radius: var(--r-sm);
+      color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+      text-transform: uppercase; letter-spacing: 0.4px; transition: var(--ease);
+    }
+    .btn-p:hover { filter: brightness(1.1); }
+    .btn-s {
+      padding: 7px 18px; background: var(--bg-0); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text-2); font-size: 11px; font-weight: 600;
+      cursor: pointer; text-transform: uppercase; letter-spacing: 0.4px; transition: var(--ease);
+    }
+    .btn-s:hover { background: var(--bg-3); color: var(--text-1); }
+
+    /* Empty */
+    .empty { display: flex; flex-direction: column; align-items: center; padding: 48px 24px; text-align: center; }
+    .empty-ico {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
+      font-size: 18px; color: var(--text-3);
+    }
+    .empty h4 { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 2px; }
+    .empty p { font-size: 11px; color: var(--text-3); line-height: 1.4; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="header-left">
       <div class="brand">
-        <div class="brand-icon">
+        <div class="brand-mark">
           <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         </div>
-        <div class="brand-text">
-          <h1>Drone Intelligence</h1>
-          <span>Aerial Perception System</span>
+        <div>
+          <div class="brand-name">Drone Intelligence</div>
+          <div class="brand-sub">Aerial Perception System</div>
         </div>
       </div>
-      <div id="connectionStatus" class="status-pill disconnected">
-        <div class="status-dot"></div>
+      <div id="connectionStatus" class="status-pill off">
+        <span class="status-dot"></span>
         <span>Offline</span>
       </div>
     </div>
-    <div class="header-metrics">
-      <div class="metric"><div class="metric-value" id="statFps">--</div><div class="metric-label">Latency</div></div>
-      <div class="metric"><div class="metric-value" id="statObjects">0</div><div class="metric-label">Objects</div></div>
-      <div class="metric"><div class="metric-value" id="statPersons">0</div><div class="metric-label">Persons</div></div>
-      <div class="metric"><div class="metric-value" id="statEvents">0</div><div class="metric-label">Events</div></div>
-      <div class="metric"><div class="metric-value" id="statFrame">0</div><div class="metric-label">Frame</div></div>
+    <div class="header-stats">
+      <div class="hstat"><span class="hstat-val" id="statFps">--</span><span class="hstat-lbl">Latency</span></div>
+      <div class="hstat"><span class="hstat-val" id="statObjects">0</span><span class="hstat-lbl">Objects</span></div>
+      <div class="hstat"><span class="hstat-val" id="statPersons">0</span><span class="hstat-lbl">Persons</span></div>
+      <div class="hstat"><span class="hstat-val" id="statEvents">0</span><span class="hstat-lbl">Events</span></div>
+      <div class="hstat"><span class="hstat-val" id="statFrame">0</span><span class="hstat-lbl">Frame</span></div>
     </div>
   </div>
-  <div class="main">
-    <div class="left-panel">
-      <div class="video-section">
-        <img id="videoFeed" src="" alt="Video Feed" crossorigin="anonymous">
-        <div class="scanlines"></div>
-        <canvas id="overlayCanvas" class="video-overlay-canvas"></canvas>
+
+  <div class="layout">
+    <div class="content">
+      <div class="video-wrap">
+        <img id="videoFeed" src="" alt="Feed" crossorigin="anonymous">
+        <canvas id="overlayCanvas" class="video-overlay"></canvas>
         <div class="video-hud">
-          <div class="hud-left">
-            <span class="hud-badge live">Live</span>
-            <span id="overlaySource" class="hud-badge source"></span>
+          <div class="hud-col">
+            <span class="hud-pill live">Live</span>
+            <span id="overlaySource" class="hud-pill data"></span>
           </div>
-          <div class="hud-right">
-            <span id="hudProcessing" class="hud-stat">-- ms</span>
+          <div class="hud-col" style="align-items:flex-end;">
+            <span id="hudProcessing" class="hud-pill data">-- ms</span>
           </div>
         </div>
       </div>
-      <div class="bottom-panels">
-        <div class="panel-card">
-          <div class="panel-title">Zone Map</div>
-          <div class="zone-canvas-wrap"><canvas id="zoneCanvas"></canvas></div>
+      <div class="bottom-row">
+        <div class="bpanel">
+          <div class="bpanel-title">Zone Map</div>
+          <div class="zone-box"><canvas id="zoneCanvas"></canvas></div>
         </div>
-        <div class="panel-card">
-          <div class="panel-title">Detection Summary</div>
-          <div class="stats-grid">
-            <div class="stat-tile"><div class="stat-value" id="countCar">0</div><div class="stat-label">Cars</div></div>
-            <div class="stat-tile"><div class="stat-value" id="countTruck">0</div><div class="stat-label">Trucks</div></div>
-            <div class="stat-tile"><div class="stat-value" id="countBus">0</div><div class="stat-label">Buses</div></div>
-            <div class="stat-tile"><div class="stat-value" id="countBoat">0</div><div class="stat-label">Boats</div></div>
-            <div class="stat-tile"><div class="stat-value" id="countPerson">0</div><div class="stat-label">Persons</div></div>
-            <div class="stat-tile"><div class="stat-value" id="countEquip">0</div><div class="stat-label">Equip.</div></div>
+        <div class="bpanel">
+          <div class="bpanel-title">Detection Summary</div>
+          <div class="det-grid">
+            <div class="det-cell"><span class="det-num" id="countCar">0</span><span class="det-lbl">Cars</span></div>
+            <div class="det-cell"><span class="det-num" id="countTruck">0</span><span class="det-lbl">Trucks</span></div>
+            <div class="det-cell"><span class="det-num" id="countBus">0</span><span class="det-lbl">Buses</span></div>
+            <div class="det-cell"><span class="det-num" id="countBoat">0</span><span class="det-lbl">Boats</span></div>
+            <div class="det-cell"><span class="det-num" id="countPerson">0</span><span class="det-lbl">Persons</span></div>
+            <div class="det-cell"><span class="det-num" id="countEquip">0</span><span class="det-lbl">Equip.</span></div>
           </div>
         </div>
       </div>
     </div>
+
     <div class="sidebar">
-      <div class="sidebar-tabs">
-        <button class="sidebar-tab active" data-tab="events">Events <span class="tab-count" id="tabCountEvents">0</span></button>
-        <button class="sidebar-tab" data-tab="tracks">Tracking <span class="tab-count" id="tabCountTracks">0</span></button>
-        <button class="sidebar-tab" data-tab="watchlist">Watchlist <span class="tab-count" id="tabCountRules">0</span></button>
+      <div class="tabs">
+        <button class="tab active" data-tab="events">Events <span class="cnt" id="tabCountEvents">0</span></button>
+        <button class="tab" data-tab="tracks">Tracking <span class="cnt" id="tabCountTracks">0</span></button>
+        <button class="tab" data-tab="watchlist">Watchlist <span class="cnt" id="tabCountRules">0</span></button>
       </div>
-      <div class="sidebar-content">
-        <div id="panelEvents" class="sidebar-panel active">
+      <div class="panels">
+        <div id="panelEvents" class="panel active">
           <div id="eventsList"></div>
-          <div id="eventsEmpty" class="empty-state">
-            <div class="empty-state-icon">&#9888;</div>
+          <div id="eventsEmpty" class="empty">
+            <div class="empty-ico">&#9651;</div>
             <h4>Awaiting Events</h4>
-            <p>Events will appear here when<br>watchlist rules are triggered</p>
+            <p>Events appear here when<br>watchlist rules are triggered</p>
           </div>
         </div>
-        <div id="panelTracks" class="sidebar-panel">
+        <div id="panelTracks" class="panel">
           <div id="tracksList"></div>
-          <div id="tracksEmpty" class="empty-state">
-            <div class="empty-state-icon">&#9678;</div>
+          <div id="tracksEmpty" class="empty">
+            <div class="empty-ico">&#9678;</div>
             <h4>No Active Tracks</h4>
-            <p>Tracked objects will appear<br>when detected in the feed</p>
+            <p>Tracked objects appear<br>when detected in the feed</p>
           </div>
         </div>
-        <div id="panelWatchlist" class="sidebar-panel">
+        <div id="panelWatchlist" class="panel">
           <div id="rulesList"></div>
           <div id="ruleForm" style="display:none;"></div>
-          <button class="add-rule-btn" id="addRuleBtn">+ Add New Rule</button>
+          <button class="add-btn" id="addRuleBtn">+ Add New Rule</button>
         </div>
       </div>
     </div>
   </div>
+
   <script>
     const _origin = window.location.origin;
     const BACKEND_URL = _origin;
@@ -297,265 +391,271 @@
       const vf = document.getElementById('videoFeed');
       if (vf) vf.src = VISION_URL + '/video_feed';
     })();
+
     let ws = null, connected = false, events = [], trackedObjects = [], zones = [], watchlistRules = [];
     let frameShape = [540, 960], totalEvents = 0, showingRuleForm = false;
-    const $connectionStatus = document.getElementById('connectionStatus');
-    const $videoFeed = document.getElementById('videoFeed');
-    const $overlayCanvas = document.getElementById('overlayCanvas');
-    const $zoneCanvas = document.getElementById('zoneCanvas');
-    const $statFps = document.getElementById('statFps');
-    const $statObjects = document.getElementById('statObjects');
-    const $statPersons = document.getElementById('statPersons');
-    const $statEvents = document.getElementById('statEvents');
-    const $statFrame = document.getElementById('statFrame');
-    const $eventsList = document.getElementById('eventsList');
-    const $eventsEmpty = document.getElementById('eventsEmpty');
-    const $tracksList = document.getElementById('tracksList');
-    const $tracksEmpty = document.getElementById('tracksEmpty');
-    const $rulesList = document.getElementById('rulesList');
-    const $overlaySource = document.getElementById('overlaySource');
-    const $hudProcessing = document.getElementById('hudProcessing');
-    const $tabCountEvents = document.getElementById('tabCountEvents');
-    const $tabCountTracks = document.getElementById('tabCountTracks');
-    const $tabCountRules = document.getElementById('tabCountRules');
+
+    const $ = id => document.getElementById(id);
+    const $status = $('connectionStatus');
+    const $feed = $('videoFeed');
+    const $overlay = $('overlayCanvas');
+    const $zoneCanvas = $('zoneCanvas');
+    const $fps = $('statFps');
+    const $objects = $('statObjects');
+    const $persons = $('statPersons');
+    const $events = $('statEvents');
+    const $frame = $('statFrame');
+    const $eventsList = $('eventsList');
+    const $eventsEmpty = $('eventsEmpty');
+    const $tracksList = $('tracksList');
+    const $tracksEmpty = $('tracksEmpty');
+    const $rulesList = $('rulesList');
+    const $source = $('overlaySource');
+    const $proc = $('hudProcessing');
+    const $cntEv = $('tabCountEvents');
+    const $cntTr = $('tabCountTracks');
+    const $cntRl = $('tabCountRules');
+
     function startVideoFeed() {
-      $videoFeed.src = VISION_URL + '/video_feed';
-      $videoFeed.onerror = () => { setTimeout(startVideoFeed, 3000); };
+      $feed.src = VISION_URL + '/video_feed';
+      $feed.onerror = () => setTimeout(startVideoFeed, 3000);
     }
+
     function connectWebSocket() {
-      try { ws = new WebSocket(WS_URL); } catch (e) { setTimeout(connectWebSocket, 3000); return; }
-      ws.onopen = () => { connected = true; updateConnectionStatus(); };
-      ws.onclose = () => { connected = false; updateConnectionStatus(); setTimeout(connectWebSocket, 3000); };
+      try { ws = new WebSocket(WS_URL); } catch(e) { setTimeout(connectWebSocket, 3000); return; }
+      ws.onopen = () => { connected = true; updateStatus(); };
+      ws.onclose = () => { connected = false; updateStatus(); setTimeout(connectWebSocket, 3000); };
       ws.onerror = () => {};
-      ws.onmessage = (event) => {
-        try { const data = JSON.parse(event.data); handleMessage(data); }
-        catch (e) { console.error('[WS] Parse error:', e); }
-      };
+      ws.onmessage = e => { try { handleMsg(JSON.parse(e.data)); } catch(err) { console.error('[WS]', err); } };
     }
-    function updateConnectionStatus() {
-      if (connected) { $connectionStatus.className = 'status-pill connected'; $connectionStatus.querySelector('span').textContent = 'Online'; }
-      else { $connectionStatus.className = 'status-pill disconnected'; $connectionStatus.querySelector('span').textContent = 'Offline'; }
+
+    function updateStatus() {
+      $status.className = 'status-pill ' + (connected ? 'on' : 'off');
+      $status.querySelector('span:last-child').textContent = connected ? 'Online' : 'Offline';
     }
-    function handleMessage(data) {
-      switch (data.type) {
-        case 'frame_update': handleFrameUpdate(data); break;
-        case 'initial_events': handleInitialEvents(data); break;
-      }
+
+    function handleMsg(d) {
+      if (d.type === 'frame_update') onFrame(d);
+      else if (d.type === 'initial_events') onInitEvents(d);
     }
-    function handleFrameUpdate(data) {
-      const ms = data.elapsed_ms?.toFixed(0) || '0';
-      $statFps.textContent = ms + 'ms';
-      $hudProcessing.textContent = ms + ' ms';
-      $statFrame.textContent = data.frame_number || 0;
-      $statPersons.textContent = data.person_count || 0;
-      trackedObjects = data.tracked_objects || [];
-      $statObjects.textContent = trackedObjects.length;
-      $tabCountTracks.textContent = trackedObjects.length;
-      if (data.frame_shape) frameShape = data.frame_shape;
-      updateDetectionCounts(data.detections || [], data.person_count);
+
+    function onFrame(d) {
+      const ms = d.elapsed_ms?.toFixed(0) || '0';
+      $fps.textContent = ms + 'ms';
+      $proc.textContent = ms + ' ms';
+      $frame.textContent = d.frame_number || 0;
+      $persons.textContent = d.person_count || 0;
+      trackedObjects = d.tracked_objects || [];
+      $objects.textContent = trackedObjects.length;
+      $cntTr.textContent = trackedObjects.length;
+      if (d.frame_shape) frameShape = d.frame_shape;
+      updateCounts(d.detections || [], d.person_count);
       renderTracks();
-      if (data.new_events && data.new_events.length > 0) { for (const evt of data.new_events) addEvent(evt); }
-      drawZoneMap();
+      if (d.new_events?.length) d.new_events.forEach(addEvent);
+      drawZones();
     }
-    function handleInitialEvents(data) {
-      if (data.events) {
-        events = data.events; totalEvents = events.length;
-        $statEvents.textContent = totalEvents;
-        $tabCountEvents.textContent = Math.min(totalEvents, 99) || '0';
-        renderEvents();
-      }
+
+    function onInitEvents(d) {
+      if (!d.events) return;
+      events = d.events; totalEvents = events.length;
+      $events.textContent = totalEvents;
+      $cntEv.textContent = Math.min(totalEvents, 99) || '0';
+      renderEvents();
     }
-    function updateDetectionCounts(detections, personCount) {
-      const counts = { car: 0, truck: 0, bus: 0, boat: 0, person: 0, construction_equipment: 0 };
-      for (const d of detections) { if (counts[d.class] !== undefined) counts[d.class]++; }
-      document.getElementById('countCar').textContent = counts.car;
-      document.getElementById('countTruck').textContent = counts.truck;
-      document.getElementById('countBus').textContent = counts.bus;
-      document.getElementById('countBoat').textContent = counts.boat;
-      document.getElementById('countPerson').textContent = personCount || counts.person;
-      document.getElementById('countEquip').textContent = counts.construction_equipment;
+
+    function updateCounts(dets, pc) {
+      const c = { car:0, truck:0, bus:0, boat:0, person:0, construction_equipment:0 };
+      dets.forEach(d => { if (c[d.class] !== undefined) c[d.class]++; });
+      $('countCar').textContent = c.car;
+      $('countTruck').textContent = c.truck;
+      $('countBus').textContent = c.bus;
+      $('countBoat').textContent = c.boat;
+      $('countPerson').textContent = pc || c.person;
+      $('countEquip').textContent = c.construction_equipment;
     }
+
     function addEvent(evt) {
       events.unshift(evt);
       if (events.length > 200) events = events.slice(0, 200);
       totalEvents++;
-      $statEvents.textContent = totalEvents;
-      $tabCountEvents.textContent = Math.min(events.length, 99);
+      $events.textContent = totalEvents;
+      $cntEv.textContent = Math.min(events.length, 99);
       renderEvents();
     }
+
     function renderEvents() {
-      if (events.length === 0) { $eventsList.innerHTML = ''; $eventsEmpty.style.display = 'flex'; return; }
+      if (!events.length) { $eventsList.innerHTML = ''; $eventsEmpty.style.display = 'flex'; return; }
       $eventsEmpty.style.display = 'none';
-      const html = events.slice(0, 50).map(evt => {
-        const time = new Date(evt.timestamp * 1000).toLocaleTimeString();
-        const priority = evt.priority || 'medium';
+      const chips = ['chip-a','chip-p','chip-g','chip-w'];
+      $eventsList.innerHTML = events.slice(0, 50).map(e => {
+        const t = new Date(e.timestamp * 1000).toLocaleTimeString();
+        const p = e.priority || 'medium';
+        const pc = p === 'high' ? 'p-high' : p === 'low' ? 'p-low' : 'p-med';
         const tags = [];
-        if (evt.class) tags.push(evt.class);
-        if (evt.track_id) tags.push('#' + evt.track_id);
-        if (evt.zone_id) tags.push(evt.zone_id);
-        if (evt.attributes?.color && evt.attributes.color !== 'other') tags.push(evt.attributes.color);
-        return '<div class="event-card ' + priority + '"><div class="event-top"><span class="event-type">' + (evt.type || 'event') + '</span><span class="event-time">' + time + '</span></div><div class="event-desc">' + (evt.description || evt.rule_name || '') + '</div><div class="event-tags">' + tags.map((t, i) => '<span class="tag ' + ['tag-default','tag-purple','tag-green','tag-amber'][i % 4] + '">' + t + '</span>').join('') + '</div></div>';
+        if (e.class) tags.push(e.class);
+        if (e.track_id) tags.push('#' + e.track_id);
+        if (e.zone_id) tags.push(e.zone_id);
+        if (e.attributes?.color && e.attributes.color !== 'other') tags.push(e.attributes.color);
+        return '<div class="card ev ' + pc + '"><div class="card-row"><span class="card-label">' + (e.type||'event') + '</span><span class="card-time">' + t + '</span></div><div class="card-body">' + (e.description||e.rule_name||'') + '</div><div class="card-tags">' + tags.map((x,i) => '<span class="chip ' + chips[i%4] + '">' + x + '</span>').join('') + '</div></div>';
       }).join('');
-      $eventsList.innerHTML = html;
     }
+
     function renderTracks() {
-      if (trackedObjects.length === 0) { $tracksList.innerHTML = ''; $tracksEmpty.style.display = 'flex'; return; }
+      if (!trackedObjects.length) { $tracksList.innerHTML = ''; $tracksEmpty.style.display = 'flex'; return; }
       $tracksEmpty.style.display = 'none';
-      const html = trackedObjects.map(obj => {
-        const attrs = obj.attributes || {};
+      $tracksList.innerHTML = trackedObjects.map(o => {
+        const a = o.attributes || {};
         const tags = [];
-        if (attrs.color && attrs.color !== 'other') tags.push(attrs.color);
-        if (attrs.size) tags.push(attrs.size);
-        if (obj.direction && obj.direction !== 'stationary') tags.push(obj.direction);
-        if (obj.zones && obj.zones.length > 0) tags.push(obj.zones.join(', '));
-        const dwell = obj.dwell_time?.toFixed(0) || 0;
-        const dwellClass = dwell > 60 ? 'warning' : '';
-        return '<div class="track-card"><div class="track-left"><span class="track-id-badge">#' + obj.track_id + '</span><div class="track-meta"><span class="track-class">' + obj.class + '</span><div class="track-attrs">' + tags.map(t => '<span class="track-attr">' + t + '</span>').join('') + '</div></div></div><span class="track-dwell ' + dwellClass + '">' + dwell + 's</span></div>';
+        if (a.color && a.color !== 'other') tags.push(a.color);
+        if (a.size) tags.push(a.size);
+        if (o.direction && o.direction !== 'stationary') tags.push(o.direction);
+        if (o.zones?.length) tags.push(o.zones.join(', '));
+        const dw = o.dwell_time?.toFixed(0) || 0;
+        const wc = dw > 60 ? ' warn' : '';
+        return '<div class="card"><div class="trk"><span class="trk-id">#' + o.track_id + '</span><div class="trk-info"><div class="trk-cls">' + o.class + '</div><div class="trk-attrs">' + tags.map(t => '<span class="trk-attr">' + t + '</span>').join('') + '</div></div><span class="trk-dwell' + wc + '">' + dw + 's</span></div></div>';
       }).join('');
-      $tracksList.innerHTML = html;
     }
-    function drawZoneMap() {
-      const canvas = $zoneCanvas;
-      const container = canvas.parentElement;
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const scaleX = canvas.width / frameShape[1];
-      const scaleY = canvas.height / frameShape[0];
-      for (const zone of zones) {
-        const polygon = zone.polygon || [];
-        if (polygon.length < 3) continue;
+
+    function drawZones() {
+      const c = $zoneCanvas, box = c.parentElement;
+      c.width = box.clientWidth; c.height = box.clientHeight;
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, c.width, c.height);
+      const sx = c.width / frameShape[1], sy = c.height / frameShape[0];
+      zones.forEach(z => {
+        const poly = z.polygon || [];
+        if (poly.length < 3) return;
         ctx.beginPath();
-        ctx.moveTo(polygon[0][0] * scaleX, polygon[0][1] * scaleY);
-        for (let i = 1; i < polygon.length; i++) ctx.lineTo(polygon[i][0] * scaleX, polygon[i][1] * scaleY);
+        ctx.moveTo(poly[0][0]*sx, poly[0][1]*sy);
+        for (let i=1; i<poly.length; i++) ctx.lineTo(poly[i][0]*sx, poly[i][1]*sy);
         ctx.closePath();
-        const color = zone.color || '#06d6f2';
-        ctx.fillStyle = color + '18'; ctx.fill();
-        ctx.strokeStyle = color + '80'; ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
-        const cx = polygon.reduce((s, p) => s + p[0], 0) / polygon.length * scaleX;
-        const cy = polygon.reduce((s, p) => s + p[1], 0) / polygon.length * scaleY;
-        const label = zone.name || zone.id;
+        const col = z.color || '#0ea5e9';
+        ctx.fillStyle = col + '15'; ctx.fill();
+        ctx.strokeStyle = col + '60'; ctx.lineWidth = 1;
+        ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+        const cx = poly.reduce((s,p)=>s+p[0],0)/poly.length*sx;
+        const cy = poly.reduce((s,p)=>s+p[1],0)/poly.length*sy;
+        const lbl = z.name || z.id;
         ctx.font = '600 9px Inter, sans-serif';
-        const tm = ctx.measureText(label);
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.beginPath(); ctx.roundRect(cx - tm.width / 2 - 5, cy - 6, tm.width + 10, 14, 3); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(label, cx, cy + 1);
-      }
-      const classColors = { car: '#10b981', truck: '#f59e0b', bus: '#8b5cf6', boat: '#06d6f2', person: '#ef4444', construction_equipment: '#f97316' };
-      for (const obj of trackedObjects) {
-        if (!obj.center) continue;
-        const x = obj.center[0] * scaleX, y = obj.center[1] * scaleY;
-        const color = classColors[obj.class] || '#6b7280';
-        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = color + '30'; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 0.5; ctx.stroke();
+        const tm = ctx.measureText(lbl);
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.beginPath(); ctx.roundRect(cx-tm.width/2-4, cy-6, tm.width+8, 13, 3); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(lbl, cx, cy+1);
+      });
+      const cc = { car:'#22c55e', truck:'#eab308', bus:'#a855f7', boat:'#0ea5e9', person:'#ef4444', construction_equipment:'#f97316' };
+      trackedObjects.forEach(o => {
+        if (!o.center) return;
+        const x = o.center[0]*sx, y = o.center[1]*sy;
+        const col = cc[o.class] || '#6b7280';
+        ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fillStyle = col+'25'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fillStyle = col; ctx.fill();
         ctx.font = '600 8px JetBrains Mono, monospace';
-        ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-        ctx.fillText('#' + obj.track_id, x, y - 9);
-      }
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+        ctx.fillText('#'+o.track_id, x, y-8);
+      });
     }
+
     async function loadWatchlist() {
       try {
-        const res = await fetch(BACKEND_URL + '/api/config/watchlist');
-        const data = await res.json();
-        watchlistRules = data.watchlist?.rules || [];
-        $tabCountRules.textContent = watchlistRules.length;
+        const r = await fetch(BACKEND_URL + '/api/config/watchlist');
+        const d = await r.json();
+        watchlistRules = d.watchlist?.rules || [];
+        $cntRl.textContent = watchlistRules.length;
         renderWatchlist();
-      } catch (e) { console.error('[Watchlist] Load error:', e); }
+      } catch(e) { console.error('[Watchlist]', e); }
     }
+
     function renderWatchlist() {
-      $tabCountRules.textContent = watchlistRules.length;
-      const html = watchlistRules.map(rule => {
-        const conditions = rule.conditions || {};
-        const condTags = [];
-        if (conditions.class) condTags.push('class: ' + conditions.class.join(', '));
-        if (conditions.color) condTags.push('color: ' + conditions.color.join(', '));
-        if (conditions.zone) condTags.push('zone: ' + conditions.zone.join(', '));
-        if (conditions.dwell_time_min) condTags.push('dwell > ' + conditions.dwell_time_min + 's');
-        if (conditions.direction) condTags.push('dir: ' + conditions.direction.join(', '));
-        if (conditions.min_count) condTags.push('count >= ' + conditions.min_count);
-        const priorityClass = 'priority-' + (rule.priority || 'medium');
-        return '<div class="rule-card ' + (rule.enabled ? '' : 'disabled-rule') + '"><div class="rule-top"><span class="rule-name">' + rule.name + '</span><button class="toggle-switch ' + (rule.enabled ? 'on' : 'off') + "\" onclick=\"toggleRule('" + rule.id + "')\">" + '</button></div><div class="rule-desc">' + (rule.description || '') + '</div><div class="rule-conditions">' + condTags.map(t => '<span class="rule-cond">' + t + '</span>').join('') + '<span class="rule-cond">' + rule.event_type + '</span></div><div class="rule-footer"><span class="rule-priority ' + priorityClass + '">' + (rule.priority || 'medium') + "</span><button class=\"btn-icon\" onclick=\"deleteRule('" + rule.id + "')\" title=\"Delete rule\">&#215;</button></div></div>";
+      $cntRl.textContent = watchlistRules.length;
+      $rulesList.innerHTML = watchlistRules.map(r => {
+        const c = r.conditions || {};
+        const tags = [];
+        if (c.class) tags.push('class: ' + c.class.join(', '));
+        if (c.color) tags.push('color: ' + c.color.join(', '));
+        if (c.zone) tags.push('zone: ' + c.zone.join(', '));
+        if (c.dwell_time_min) tags.push('dwell > ' + c.dwell_time_min + 's');
+        if (c.direction) tags.push('dir: ' + c.direction.join(', '));
+        if (c.min_count) tags.push('count >= ' + c.min_count);
+        const bc = r.priority === 'high' ? 'badge-hi' : r.priority === 'low' ? 'badge-lo' : 'badge-md';
+        return '<div class="card' + (r.enabled ? '' : '" style="opacity:0.45') + '"><div class="rule-head"><span class="rule-name">' + r.name + "</span><button class=\"toggle " + (r.enabled ? 'on' : 'off') + "\" onclick=\"toggleRule('" + r.id + "')\"></button></div><div class=\"rule-desc\">" + (r.description||'') + '</div><div class="rule-conds">' + tags.map(t => '<span class="chip chip-p">' + t + '</span>').join('') + '<span class="chip chip-a">' + r.event_type + "</span></div><div class=\"rule-foot\"><span class=\"badge " + bc + '">' + (r.priority||'medium') + "</span><button class=\"del-btn\" onclick=\"deleteRule('" + r.id + "')\" title=\"Delete\">&#215;</button></div></div>";
       }).join('');
-      $rulesList.innerHTML = html;
     }
-    async function toggleRule(ruleId) {
-      const rule = watchlistRules.find(r => r.id === ruleId);
-      if (!rule) return;
-      rule.enabled = !rule.enabled;
+
+    async function toggleRule(id) {
+      const r = watchlistRules.find(x => x.id === id);
+      if (!r) return;
+      r.enabled = !r.enabled;
       try {
-        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + ruleId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: rule.enabled }) });
+        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({enabled:r.enabled}) });
         renderWatchlist();
-      } catch (e) { console.error('[Watchlist] Toggle error:', e); }
+      } catch(e) { console.error('[Watchlist]', e); }
     }
-    async function deleteRule(ruleId) {
+
+    async function deleteRule(id) {
       try {
-        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + ruleId, { method: 'DELETE' });
-        watchlistRules = watchlistRules.filter(r => r.id !== ruleId);
+        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + id, { method:'DELETE' });
+        watchlistRules = watchlistRules.filter(x => x.id !== id);
         renderWatchlist();
-      } catch (e) { console.error('[Watchlist] Delete error:', e); }
+      } catch(e) { console.error('[Watchlist]', e); }
     }
-    document.getElementById('addRuleBtn').addEventListener('click', () => {
+
+    $('addRuleBtn').addEventListener('click', () => {
       showingRuleForm = !showingRuleForm;
-      const $form = document.getElementById('ruleForm');
+      const f = $('ruleForm');
       if (showingRuleForm) {
-        $form.style.display = 'block';
-        $form.innerHTML = '<div class="rule-form"><h4>Create New Rule</h4><label>Rule Name</label><input type="text" id="newRuleName" placeholder="e.g. Red truck in zone B"><label>Vehicle Classes (comma-separated)</label><input type="text" id="newRuleClasses" placeholder="car, truck, bus, boat"><label>Colors (comma-separated, leave empty for any)</label><input type="text" id="newRuleColors" placeholder="black, white, red, blue"><label>Zones (comma-separated, leave empty for any)</label><input type="text" id="newRuleZones" placeholder="zone_a, zone_b"><label>Min Dwell Time (seconds, 0 for none)</label><input type="number" id="newRuleDwell" value="0" min="0"><label>Event Type</label><select id="newRuleEventType"><option value="watchlist_match">Watchlist Match</option><option value="dwell_alert">Dwell Alert</option><option value="zone_entry">Zone Entry</option></select><label>Priority</label><select id="newRulePriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select><div class="form-actions"><button class="btn-primary" onclick="submitNewRule()">Create Rule</button><button class="btn-secondary" onclick="cancelNewRule()">Cancel</button></div></div>';
-      } else { $form.style.display = 'none'; $form.innerHTML = ''; }
+        f.style.display = 'block';
+        f.innerHTML = '<div class="form-wrap"><h4>New Rule</h4><label>Name</label><input id="nrName" placeholder="e.g. Red truck in zone B"><label>Classes (comma-sep)</label><input id="nrClass" placeholder="car, truck, bus, boat"><label>Colors (optional)</label><input id="nrColor" placeholder="black, white, red, blue"><label>Zones (optional)</label><input id="nrZone" placeholder="zone_a, zone_b"><label>Min Dwell (sec)</label><input type="number" id="nrDwell" value="0" min="0"><label>Event Type</label><select id="nrType"><option value="watchlist_match">Watchlist Match</option><option value="dwell_alert">Dwell Alert</option><option value="zone_entry">Zone Entry</option></select><label>Priority</label><select id="nrPri"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select><div class="form-btns"><button class="btn-p" onclick="submitRule()">Create</button><button class="btn-s" onclick="cancelRule()">Cancel</button></div></div>';
+      } else { f.style.display = 'none'; f.innerHTML = ''; }
     });
-    async function submitNewRule() {
-      const name = document.getElementById('newRuleName').value.trim();
-      if (!name) return alert('Please enter a rule name');
-      const classesStr = document.getElementById('newRuleClasses').value.trim();
-      const colorsStr = document.getElementById('newRuleColors').value.trim();
-      const zonesStr = document.getElementById('newRuleZones').value.trim();
-      const dwell = parseInt(document.getElementById('newRuleDwell').value) || 0;
-      const eventType = document.getElementById('newRuleEventType').value;
-      const priority = document.getElementById('newRulePriority').value;
-      const conditions = {};
-      if (classesStr) conditions.class = classesStr.split(',').map(s => s.trim()).filter(Boolean);
-      if (colorsStr) conditions.color = colorsStr.split(',').map(s => s.trim()).filter(Boolean);
-      if (zonesStr) conditions.zone = zonesStr.split(',').map(s => s.trim()).filter(Boolean);
-      if (dwell > 0) conditions.dwell_time_min = dwell;
-      const rule = { name, enabled: true, conditions, event_type: eventType, priority, description: name };
+
+    async function submitRule() {
+      const name = $('nrName').value.trim();
+      if (!name) return alert('Enter a rule name');
+      const cond = {};
+      const cls = $('nrClass').value.trim(); if (cls) cond.class = cls.split(',').map(s=>s.trim()).filter(Boolean);
+      const col = $('nrColor').value.trim(); if (col) cond.color = col.split(',').map(s=>s.trim()).filter(Boolean);
+      const zn = $('nrZone').value.trim(); if (zn) cond.zone = zn.split(',').map(s=>s.trim()).filter(Boolean);
+      const dw = parseInt($('nrDwell').value) || 0; if (dw > 0) cond.dwell_time_min = dw;
+      const rule = { name, enabled:true, conditions:cond, event_type:$('nrType').value, priority:$('nrPri').value, description:name };
       try {
-        const res = await fetch(BACKEND_URL + '/api/config/watchlist/rules', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rule) });
-        const data = await res.json();
-        if (data.rule) { watchlistRules.push(data.rule); renderWatchlist(); }
-        cancelNewRule();
-      } catch (e) { console.error('[Watchlist] Add rule error:', e); }
+        const res = await fetch(BACKEND_URL + '/api/config/watchlist/rules', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(rule) });
+        const d = await res.json();
+        if (d.rule) { watchlistRules.push(d.rule); renderWatchlist(); }
+        cancelRule();
+      } catch(e) { console.error('[Watchlist]', e); }
     }
-    function cancelNewRule() {
+
+    function cancelRule() {
       showingRuleForm = false;
-      document.getElementById('ruleForm').style.display = 'none';
-      document.getElementById('ruleForm').innerHTML = '';
+      $('ruleForm').style.display = 'none';
+      $('ruleForm').innerHTML = '';
     }
+
     async function loadZones() {
       try {
-        const res = await fetch(BACKEND_URL + '/api/config/zones');
-        const data = await res.json();
-        zones = data.zones?.zones || [];
-        drawZoneMap();
-      } catch (e) { console.error('[Zones] Load error:', e); setTimeout(loadZones, 5000); }
+        const r = await fetch(BACKEND_URL + '/api/config/zones');
+        const d = await r.json();
+        zones = d.zones?.zones || [];
+        drawZones();
+      } catch(e) { console.error('[Zones]', e); setTimeout(loadZones, 5000); }
     }
-    document.querySelectorAll('.sidebar-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById('panel' + capitalize(tab.dataset.tab)).classList.add('active');
+
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        $('panel' + t.dataset.tab.charAt(0).toUpperCase() + t.dataset.tab.slice(1)).classList.add('active');
       });
     });
-    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
     function init() {
       startVideoFeed(); connectWebSocket(); loadWatchlist(); loadZones();
       setInterval(loadZones, 30000);
-      fetch(VISION_URL + '/health').then(r => r.json()).then(data => {
-        if (data.config?.video_source) $overlaySource.textContent = data.config.video_source;
-      }).catch(() => {});
+      fetch(VISION_URL + '/health').then(r=>r.json()).then(d => {
+        if (d.config?.video_source) $source.textContent = d.config.video_source;
+      }).catch(()=>{});
     }
     init();
   </script>
