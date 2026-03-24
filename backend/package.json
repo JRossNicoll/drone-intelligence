@@ -1,0 +1,20 @@
+{
+  "name": "drone-intelligence-backend",
+  "version": "1.0.0",
+  "description": "Drone intelligence backend - REST API, WebSocket, rules engine, event management",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "uuid": "^11.0.3",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

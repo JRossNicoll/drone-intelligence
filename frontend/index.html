@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Intelligence - Aerial Perception System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-0: #0a0c10;
+      --bg-1: #0f1218;
+      --bg-2: #151a22;
+      --bg-3: #1b2130;
+      --bg-hover: #1e2433;
+      --bg-input: #0c0f14;
+      --text-0: #f0f2f5;
+      --text-1: #c0c8d8;
+      --text-2: #6b7a94;
+      --text-3: #3e4b62;
+      --accent: #0ea5e9;
+      --accent-dim: rgba(14, 165, 233, 0.10);
+      --accent-border: rgba(14, 165, 233, 0.18);
+      --green: #22c55e;
+      --green-dim: rgba(34, 197, 94, 0.10);
+      --green-border: rgba(34, 197, 94, 0.20);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.10);
+      --red-border: rgba(239, 68, 68, 0.20);
+      --amber: #eab308;
+      --amber-dim: rgba(234, 179, 8, 0.10);
+      --amber-border: rgba(234, 179, 8, 0.20);
+      --purple: #a855f7;
+      --purple-dim: rgba(168, 85, 247, 0.10);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-light: rgba(255, 255, 255, 0.09);
+      --r: 8px;
+      --r-sm: 6px;
+      --r-xs: 4px;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', monospace;
+      --ease: 0.15s ease;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--sans); background: var(--bg-0); color: var(--text-0); overflow: hidden; height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 48px;
+      background: var(--bg-1); border-bottom: 1px solid var(--border);
+    }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 28px; height: 28px; border-radius: var(--r-sm);
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+    }
+    .brand-mark svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .brand-name { font-size: 13px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-0); }
+    .brand-sub { font-size: 9px; font-weight: 500; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 100px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+    }
+    .status-pill.on { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+    .status-pill.off { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .status-pill.on .status-dot { background: var(--green); animation: blink 2s infinite; }
+    .status-pill.off .status-dot { background: var(--red); }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.4} }
+
+    .header-stats { display: flex; gap: 2px; }
+    .hstat {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 4px 14px; min-width: 64px;
+      background: var(--bg-2); border-radius: var(--r-sm); border: 1px solid var(--border);
+    }
+    .hstat-val { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); line-height: 1.2; }
+    .hstat-lbl { font-size: 8px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
+
+    /* ── Layout ── */
+    .layout { display: grid; grid-template-columns: 1fr 360px; height: calc(100vh - 48px); }
+    .content { display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Video ── */
+    .video-wrap { flex: 1; position: relative; background: #000; min-height: 0; overflow: hidden; }
+    .video-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .video-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .video-hud {
+      position: absolute; top: 0; left: 0; right: 0; padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      pointer-events: none; z-index: 2;
+    }
+    .hud-col { display: flex; flex-direction: column; gap: 4px; }
+    .hud-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: var(--r-xs);
+      font-size: 10px; font-weight: 600; backdrop-filter: blur(12px);
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08);
+      width: fit-content;
+    }
+    .hud-pill.live { background: rgba(239,68,68,0.80); color: #fff; border-color: transparent; letter-spacing: 0.6px; text-transform: uppercase; }
+    .hud-pill.live::before { content:''; width:5px; height:5px; border-radius:50%; background:#fff; animation: blink 1.2s infinite; }
+    .hud-pill.data { color: var(--text-1); font-family: var(--mono); font-weight: 500; font-size: 10px; letter-spacing: 0; }
+
+    /* ── Bottom panels ── */
+    .bottom-row {
+      display: grid; grid-template-columns: 1fr 1fr; height: 180px;
+      border-top: 1px solid var(--border);
+    }
+    .bpanel { padding: 12px 16px; background: var(--bg-1); display: flex; flex-direction: column; }
+    .bpanel + .bpanel { border-left: 1px solid var(--border); }
+    .bpanel-title {
+      font-size: 10px; font-weight: 700; color: var(--text-2); text-transform: uppercase;
+      letter-spacing: 1.2px; margin-bottom: 10px;
+      padding-left: 10px; border-left: 2px solid var(--accent);
+    }
+    .zone-box { flex:1; background: var(--bg-2); border-radius: var(--r-sm); border: 1px solid var(--border); overflow: hidden; position: relative; min-height: 0; }
+    .zone-box canvas { display:block; width:100%; height:100%; }
+    .det-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; }
+    .det-cell {
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-sm);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 6px; transition: var(--ease);
+    }
+    .det-cell:hover { border-color: var(--accent-border); }
+    .det-num { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text-0); line-height: 1; }
+    .det-lbl { font-size: 9px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+    /* ── Sidebar ── */
+    .sidebar { display: flex; flex-direction: column; background: var(--bg-1); border-left: 1px solid var(--border); overflow: hidden; }
+    .tabs { display: flex; background: var(--bg-0); border-bottom: 1px solid var(--border); }
+    .tab {
+      flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 600;
+      color: var(--text-3); cursor: pointer; border: none; background: none;
+      border-bottom: 2px solid transparent; transition: var(--ease); letter-spacing: 0.2px;
+    }
+    .tab:hover { color: var(--text-2); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab .cnt {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 16px; height: 14px; padding: 0 4px; border-radius: 7px;
+      font-size: 9px; font-weight: 700; font-family: var(--mono); margin-left: 4px;
+      background: var(--bg-3); color: var(--text-3);
+    }
+    .tab.active .cnt { background: var(--accent-dim); color: var(--accent); }
+    .panels { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .panel { display: none; padding: 10px; }
+    .panel.active { display: block; }
+
+    /* ── Cards (uniform) ── */
+    .card {
+      padding: 12px; margin-bottom: 6px; background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--r); transition: var(--ease);
+    }
+    .card:hover { background: var(--bg-hover); border-color: var(--border-light); }
+    .card-row { display: flex; justify-content: space-between; align-items: center; }
+    .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-0); }
+    .card-time { font-family: var(--mono); font-size: 10px; color: var(--text-3); }
+    .card-body { color: var(--text-1); font-size: 11px; line-height: 1.5; margin: 6px 0 8px; }
+    .card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .chip {
+      padding: 2px 7px; border-radius: var(--r-xs); font-size: 9px; font-weight: 600;
+      font-family: var(--mono); letter-spacing: 0.2px;
+    }
+    .chip-a { background: var(--accent-dim); color: var(--accent); }
+    .chip-p { background: var(--purple-dim); color: var(--purple); }
+    .chip-g { background: var(--green-dim); color: var(--green); }
+    .chip-w { background: var(--amber-dim); color: var(--amber); }
+
+    /* Event card priority stripe */
+    .card.ev { border-left: 3px solid var(--accent); }
+    .card.ev.p-high { border-left-color: var(--red); }
+    .card.ev.p-med { border-left-color: var(--amber); }
+    .card.ev.p-low { border-left-color: var(--green); }
+
+    /* Track card */
+    .trk { display: flex; align-items: center; gap: 10px; }
+    .trk-id {
+      font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--accent);
+      background: var(--accent-dim); padding: 3px 7px; border-radius: var(--r-xs);
+      min-width: 32px; text-align: center;
+    }
+    .trk-info { flex: 1; }
+    .trk-cls { font-size: 12px; font-weight: 600; color: var(--text-0); text-transform: capitalize; }
+    .trk-attrs { display: flex; gap: 3px; margin-top: 2px; }
+    .trk-attr { font-size: 9px; font-weight: 600; font-family: var(--mono); color: var(--text-3); background: var(--bg-3); padding: 1px 5px; border-radius: 3px; }
+    .trk-dwell { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--text-3); }
+    .trk-dwell.warn { color: var(--amber); }
+
+    /* Rule card */
+    .rule-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .rule-name { font-size: 12px; font-weight: 700; color: var(--text-0); }
+    .toggle {
+      width: 36px; height: 20px; border-radius: 10px; border: none; cursor: pointer;
+      position: relative; transition: var(--ease); flex-shrink: 0;
+    }
+    .toggle.on { background: var(--green); }
+    .toggle.off { background: var(--bg-0); border: 1px solid var(--border-light); }
+    .toggle::after {
+      content:''; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+      background: #fff; top: 3px; transition: var(--ease);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .toggle.on::after { left: 19px; }
+    .toggle.off::after { left: 3px; }
+    .rule-desc { color: var(--text-2); font-size: 11px; margin: 4px 0 8px; line-height: 1.4; }
+    .rule-conds { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+    .rule-foot { display: flex; justify-content: space-between; align-items: center; }
+    .badge {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 2px 7px; border-radius: var(--r-xs);
+    }
+    .badge-hi { background: var(--red-dim); color: var(--red); }
+    .badge-md { background: var(--amber-dim); color: var(--amber); }
+    .badge-lo { background: var(--green-dim); color: var(--green); }
+    .del-btn {
+      width: 24px; height: 24px; border-radius: var(--r-xs);
+      border: 1px solid var(--border); background: transparent; color: var(--text-3);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: var(--ease);
+    }
+    .del-btn:hover { background: var(--red-dim); color: var(--red); border-color: var(--red-border); }
+
+    /* Add rule */
+    .add-btn {
+      width: 100%; padding: 10px; margin-top: 6px;
+      background: var(--bg-2); border: 1px dashed var(--accent-border);
+      border-radius: var(--r); color: var(--accent);
+      font-size: 11px; font-weight: 600; cursor: pointer; transition: var(--ease);
+    }
+    .add-btn:hover { background: var(--accent-dim); }
+    .form-wrap {
+      padding: 14px; margin-bottom: 8px; background: var(--bg-2);
+      border-radius: var(--r); border: 1px solid var(--accent-border);
+    }
+    .form-wrap h4 {
+      font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .form-wrap label {
+      display: block; font-size: 10px; font-weight: 600; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.4px; margin: 8px 0 3px;
+    }
+    .form-wrap label:first-of-type { margin-top: 0; }
+    .form-wrap input, .form-wrap select {
+      width: 100%; padding: 7px 10px; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      color: var(--text-0); font-size: 12px; font-family: var(--sans);
+      outline: none; transition: var(--ease);
+    }
+    .form-wrap input:focus, .form-wrap select:focus { border-color: var(--accent); }
+    .form-wrap input::placeholder { color: var(--text-3); }
+    .form-btns { display: flex; gap: 6px; margin-top: 12px; }
+    .btn-p {
+      padding: 7px 18px; background: var(--accent); border: none; border-radius: var(--r-sm);
+      color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+      text-transform: uppercase; letter-spacing: 0.4px; transition: var(--ease);
+    }
+    .btn-p:hover { filter: brightness(1.1); }
+    .btn-s {
+      padding: 7px 18px; background: var(--bg-0); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text-2); font-size: 11px; font-weight: 600;
+      cursor: pointer; text-transform: uppercase; letter-spacing: 0.4px; transition: var(--ease);
+    }
+    .btn-s:hover { background: var(--bg-3); color: var(--text-1); }
+
+    /* Empty */
+    .empty { display: flex; flex-direction: column; align-items: center; padding: 48px 24px; text-align: center; }
+    .empty-ico {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
+      font-size: 18px; color: var(--text-3);
+    }
+    .empty h4 { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 2px; }
+    .empty p { font-size: 11px; color: var(--text-3); line-height: 1.4; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">Drone Intelligence</div>
+          <div class="brand-sub">Aerial Perception System</div>
+        </div>
+      </div>
+      <div id="connectionStatus" class="status-pill off">
+        <span class="status-dot"></span>
+        <span>Offline</span>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><span class="hstat-val" id="statFps">--</span><span class="hstat-lbl">Latency</span></div>
+      <div class="hstat"><span class="hstat-val" id="statObjects">0</span><span class="hstat-lbl">Objects</span></div>
+      <div class="hstat"><span class="hstat-val" id="statPersons">0</span><span class="hstat-lbl">Persons</span></div>
+      <div class="hstat"><span class="hstat-val" id="statEvents">0</span><span class="hstat-lbl">Events</span></div>
+      <div class="hstat"><span class="hstat-val" id="statFrame">0</span><span class="hstat-lbl">Frame</span></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="content">
+      <div class="video-wrap">
+        <img id="videoFeed" src="" alt="Feed" crossorigin="anonymous">
+        <canvas id="overlayCanvas" class="video-overlay"></canvas>
+        <div class="video-hud">
+          <div class="hud-col">
+            <span class="hud-pill live">Live</span>
+            <span id="overlaySource" class="hud-pill data"></span>
+          </div>
+          <div class="hud-col" style="align-items:flex-end;">
+            <span id="hudProcessing" class="hud-pill data">-- ms</span>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-row">
+        <div class="bpanel">
+          <div class="bpanel-title">Zone Map</div>
+          <div class="zone-box"><canvas id="zoneCanvas"></canvas></div>
+        </div>
+        <div class="bpanel">
+          <div class="bpanel-title">Detection Summary</div>
+          <div class="det-grid">
+            <div class="det-cell"><span class="det-num" id="countCar">0</span><span class="det-lbl">Cars</span></div>
+            <div class="det-cell"><span class="det-num" id="countTruck">0</span><span class="det-lbl">Trucks</span></div>
+            <div class="det-cell"><span class="det-num" id="countBus">0</span><span class="det-lbl">Buses</span></div>
+            <div class="det-cell"><span class="det-num" id="countBoat">0</span><span class="det-lbl">Boats</span></div>
+            <div class="det-cell"><span class="det-num" id="countPerson">0</span><span class="det-lbl">Persons</span></div>
+            <div class="det-cell"><span class="det-num" id="countEquip">0</span><span class="det-lbl">Equip.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="tabs">
+        <button class="tab active" data-tab="events">Events <span class="cnt" id="tabCountEvents">0</span></button>
+        <button class="tab" data-tab="tracks">Tracking <span class="cnt" id="tabCountTracks">0</span></button>
+        <button class="tab" data-tab="watchlist">Watchlist <span class="cnt" id="tabCountRules">0</span></button>
+      </div>
+      <div class="panels">
+        <div id="panelEvents" class="panel active">
+          <div id="eventsList"></div>
+          <div id="eventsEmpty" class="empty">
+            <div class="empty-ico">&#9651;</div>
+            <h4>Awaiting Events</h4>
+            <p>Events appear here when<br>watchlist rules are triggered</p>
+          </div>
+        </div>
+        <div id="panelTracks" class="panel">
+          <div id="tracksList"></div>
+          <div id="tracksEmpty" class="empty">
+            <div class="empty-ico">&#9678;</div>
+            <h4>No Active Tracks</h4>
+            <p>Tracked objects appear<br>when detected in the feed</p>
+          </div>
+        </div>
+        <div id="panelWatchlist" class="panel">
+          <div id="rulesList"></div>
+          <div id="ruleForm" style="display:none;"></div>
+          <button class="add-btn" id="addRuleBtn">+ Add New Rule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const _origin = window.location.origin;
+    const BACKEND_URL = _origin;
+    const WS_URL = (_origin.replace(/^http/, 'ws')) + '/ws';
+    let VISION_URL = 'http://localhost:8000';
+    (async () => {
+      try {
+        const r = await fetch(BACKEND_URL + '/api/health');
+        const d = await r.json();
+        if (d.vision_url) VISION_URL = d.vision_url;
+      } catch (_) {}
+      const vf = document.getElementById('videoFeed');
+      if (vf) vf.src = VISION_URL + '/video_feed';
+    })();
+
+    let ws = null, connected = false, events = [], trackedObjects = [], zones = [], watchlistRules = [];
+    let frameShape = [540, 960], totalEvents = 0, showingRuleForm = false;
+
+    const $ = id => document.getElementById(id);
+    const $status = $('connectionStatus');
+    const $feed = $('videoFeed');
+    const $overlay = $('overlayCanvas');
+    const $zoneCanvas = $('zoneCanvas');
+    const $fps = $('statFps');
+    const $objects = $('statObjects');
+    const $persons = $('statPersons');
+    const $events = $('statEvents');
+    const $frame = $('statFrame');
+    const $eventsList = $('eventsList');
+    const $eventsEmpty = $('eventsEmpty');
+    const $tracksList = $('tracksList');
+    const $tracksEmpty = $('tracksEmpty');
+    const $rulesList = $('rulesList');
+    const $source = $('overlaySource');
+    const $proc = $('hudProcessing');
+    const $cntEv = $('tabCountEvents');
+    const $cntTr = $('tabCountTracks');
+    const $cntRl = $('tabCountRules');
+
+    function startVideoFeed() {
+      $feed.src = VISION_URL + '/video_feed';
+      $feed.onerror = () => setTimeout(startVideoFeed, 3000);
+    }
+
+    function connectWebSocket() {
+      try { ws = new WebSocket(WS_URL); } catch(e) { setTimeout(connectWebSocket, 3000); return; }
+      ws.onopen = () => { connected = true; updateStatus(); };
+      ws.onclose = () => { connected = false; updateStatus(); setTimeout(connectWebSocket, 3000); };
+      ws.onerror = () => {};
+      ws.onmessage = e => { try { handleMsg(JSON.parse(e.data)); } catch(err) { console.error('[WS]', err); } };
+    }
+
+    function updateStatus() {
+      $status.className = 'status-pill ' + (connected ? 'on' : 'off');
+      $status.querySelector('span:last-child').textContent = connected ? 'Online' : 'Offline';
+    }
+
+    function handleMsg(d) {
+      if (d.type === 'frame_update') onFrame(d);
+      else if (d.type === 'initial_events') onInitEvents(d);
+    }
+
+    function onFrame(d) {
+      const ms = d.elapsed_ms?.toFixed(0) || '0';
+      $fps.textContent = ms + 'ms';
+      $proc.textContent = ms + ' ms';
+      $frame.textContent = d.frame_number || 0;
+      $persons.textContent = d.person_count || 0;
+      trackedObjects = d.tracked_objects || [];
+      $objects.textContent = trackedObjects.length;
+      $cntTr.textContent = trackedObjects.length;
+      if (d.frame_shape) frameShape = d.frame_shape;
+      updateCounts(d.detections || [], d.person_count);
+      renderTracks();
+      if (d.new_events?.length) d.new_events.forEach(addEvent);
+      drawZones();
+    }
+
+    function onInitEvents(d) {
+      if (!d.events) return;
+      events = d.events; totalEvents = events.length;
+      $events.textContent = totalEvents;
+      $cntEv.textContent = Math.min(totalEvents, 99) || '0';
+      renderEvents();
+    }
+
+    function updateCounts(dets, pc) {
+      const c = { car:0, truck:0, bus:0, boat:0, person:0, construction_equipment:0 };
+      dets.forEach(d => { if (c[d.class] !== undefined) c[d.class]++; });
+      $('countCar').textContent = c.car;
+      $('countTruck').textContent = c.truck;
+      $('countBus').textContent = c.bus;
+      $('countBoat').textContent = c.boat;
+      $('countPerson').textContent = pc || c.person;
+      $('countEquip').textContent = c.construction_equipment;
+    }
+
+    function addEvent(evt) {
+      events.unshift(evt);
+      if (events.length > 200) events = events.slice(0, 200);
+      totalEvents++;
+      $events.textContent = totalEvents;
+      $cntEv.textContent = Math.min(events.length, 99);
+      renderEvents();
+    }
+
+    function renderEvents() {
+      if (!events.length) { $eventsList.innerHTML = ''; $eventsEmpty.style.display = 'flex'; return; }
+      $eventsEmpty.style.display = 'none';
+      const chips = ['chip-a','chip-p','chip-g','chip-w'];
+      $eventsList.innerHTML = events.slice(0, 50).map(e => {
+        const t = new Date(e.timestamp * 1000).toLocaleTimeString();
+        const p = e.priority || 'medium';
+        const pc = p === 'high' ? 'p-high' : p === 'low' ? 'p-low' : 'p-med';
+        const tags = [];
+        if (e.class) tags.push(e.class);
+        if (e.track_id) tags.push('#' + e.track_id);
+        if (e.zone_id) tags.push(e.zone_id);
+        if (e.attributes?.color && e.attributes.color !== 'other') tags.push(e.attributes.color);
+        return '<div class="card ev ' + pc + '"><div class="card-row"><span class="card-label">' + (e.type||'event') + '</span><span class="card-time">' + t + '</span></div><div class="card-body">' + (e.description||e.rule_name||'') + '</div><div class="card-tags">' + tags.map((x,i) => '<span class="chip ' + chips[i%4] + '">' + x + '</span>').join('') + '</div></div>';
+      }).join('');
+    }
+
+    function renderTracks() {
+      if (!trackedObjects.length) { $tracksList.innerHTML = ''; $tracksEmpty.style.display = 'flex'; return; }
+      $tracksEmpty.style.display = 'none';
+      $tracksList.innerHTML = trackedObjects.map(o => {
+        const a = o.attributes || {};
+        const tags = [];
+        if (a.color && a.color !== 'other') tags.push(a.color);
+        if (a.size) tags.push(a.size);
+        if (o.direction && o.direction !== 'stationary') tags.push(o.direction);
+        if (o.zones?.length) tags.push(o.zones.join(', '));
+        const dw = o.dwell_time?.toFixed(0) || 0;
+        const wc = dw > 60 ? ' warn' : '';
+        return '<div class="card"><div class="trk"><span class="trk-id">#' + o.track_id + '</span><div class="trk-info"><div class="trk-cls">' + o.class + '</div><div class="trk-attrs">' + tags.map(t => '<span class="trk-attr">' + t + '</span>').join('') + '</div></div><span class="trk-dwell' + wc + '">' + dw + 's</span></div></div>';
+      }).join('');
+    }
+
+    function drawZones() {
+      const c = $zoneCanvas, box = c.parentElement;
+      const rect = box.getBoundingClientRect();
+      c.width = Math.round(rect.width); c.height = Math.round(rect.height);
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, c.width, c.height);
+      const sx = c.width / frameShape[1], sy = c.height / frameShape[0];
+      zones.forEach(z => {
+        const poly = z.polygon || [];
+        if (poly.length < 3) return;
+        ctx.beginPath();
+        ctx.moveTo(poly[0][0]*sx, poly[0][1]*sy);
+        for (let i=1; i<poly.length; i++) ctx.lineTo(poly[i][0]*sx, poly[i][1]*sy);
+        ctx.closePath();
+        const col = z.color || '#0ea5e9';
+        ctx.fillStyle = col + '15'; ctx.fill();
+        ctx.strokeStyle = col + '60'; ctx.lineWidth = 1;
+        ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+        const cx = poly.reduce((s,p)=>s+p[0],0)/poly.length*sx;
+        const cy = poly.reduce((s,p)=>s+p[1],0)/poly.length*sy;
+        const lbl = z.name || z.id;
+        ctx.font = '600 9px Inter, sans-serif';
+        const tm = ctx.measureText(lbl);
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.beginPath(); ctx.roundRect(cx-tm.width/2-4, cy-6, tm.width+8, 13, 3); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(lbl, cx, cy+1);
+      });
+      const cc = { car:'#22c55e', truck:'#eab308', bus:'#a855f7', boat:'#0ea5e9', person:'#ef4444', construction_equipment:'#f97316' };
+      trackedObjects.forEach(o => {
+        if (!o.center) return;
+        const x = o.center[0]*sx, y = o.center[1]*sy;
+        const col = cc[o.class] || '#6b7280';
+        ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fillStyle = col+'25'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fillStyle = col; ctx.fill();
+        ctx.font = '600 8px JetBrains Mono, monospace';
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+        ctx.fillText('#'+o.track_id, x, y-8);
+      });
+    }
+
+    async function loadWatchlist() {
+      try {
+        const r = await fetch(BACKEND_URL + '/api/config/watchlist');
+        const d = await r.json();
+        watchlistRules = d.watchlist?.rules || [];
+        $cntRl.textContent = watchlistRules.length;
+        renderWatchlist();
+      } catch(e) { console.error('[Watchlist]', e); }
+    }
+
+    function renderWatchlist() {
+      $cntRl.textContent = watchlistRules.length;
+      $rulesList.innerHTML = watchlistRules.map(r => {
+        const c = r.conditions || {};
+        const tags = [];
+        if (c.class) tags.push('class: ' + c.class.join(', '));
+        if (c.color) tags.push('color: ' + c.color.join(', '));
+        if (c.zone) tags.push('zone: ' + c.zone.join(', '));
+        if (c.dwell_time_min) tags.push('dwell > ' + c.dwell_time_min + 's');
+        if (c.direction) tags.push('dir: ' + c.direction.join(', '));
+        if (c.min_count) tags.push('count >= ' + c.min_count);
+        const bc = r.priority === 'high' ? 'badge-hi' : r.priority === 'low' ? 'badge-lo' : 'badge-md';
+        return '<div class="card' + (r.enabled ? '' : '" style="opacity:0.45') + '"><div class="rule-head"><span class="rule-name">' + r.name + "</span><button class=\"toggle " + (r.enabled ? 'on' : 'off') + "\" onclick=\"toggleRule('" + r.id + "')\"></button></div><div class=\"rule-desc\">" + (r.description||'') + '</div><div class="rule-conds">' + tags.map(t => '<span class="chip chip-p">' + t + '</span>').join('') + '<span class="chip chip-a">' + r.event_type + "</span></div><div class=\"rule-foot\"><span class=\"badge " + bc + '">' + (r.priority||'medium') + "</span><button class=\"del-btn\" onclick=\"deleteRule('" + r.id + "')\" title=\"Delete\">&#215;</button></div></div>";
+      }).join('');
+    }
+
+    async function toggleRule(id) {
+      const r = watchlistRules.find(x => x.id === id);
+      if (!r) return;
+      r.enabled = !r.enabled;
+      try {
+        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({enabled:r.enabled}) });
+        renderWatchlist();
+      } catch(e) { console.error('[Watchlist]', e); }
+    }
+
+    async function deleteRule(id) {
+      try {
+        await fetch(BACKEND_URL + '/api/config/watchlist/rules/' + id, { method:'DELETE' });
+        watchlistRules = watchlistRules.filter(x => x.id !== id);
+        renderWatchlist();
+      } catch(e) { console.error('[Watchlist]', e); }
+    }
+
+    $('addRuleBtn').addEventListener('click', () => {
+      showingRuleForm = !showingRuleForm;
+      const f = $('ruleForm');
+      if (showingRuleForm) {
+        f.style.display = 'block';
+        f.innerHTML = '<div class="form-wrap"><h4>New Rule</h4><label>Name</label><input id="nrName" placeholder="e.g. Red truck in zone B"><label>Classes (comma-sep)</label><input id="nrClass" placeholder="car, truck, bus, boat"><label>Colors (optional)</label><input id="nrColor" placeholder="black, white, red, blue"><label>Zones (optional)</label><input id="nrZone" placeholder="zone_a, zone_b"><label>Min Dwell (sec)</label><input type="number" id="nrDwell" value="0" min="0"><label>Event Type</label><select id="nrType"><option value="watchlist_match">Watchlist Match</option><option value="dwell_alert">Dwell Alert</option><option value="zone_entry">Zone Entry</option></select><label>Priority</label><select id="nrPri"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select><div class="form-btns"><button class="btn-p" onclick="submitRule()">Create</button><button class="btn-s" onclick="cancelRule()">Cancel</button></div></div>';
+      } else { f.style.display = 'none'; f.innerHTML = ''; }
+    });
+
+    async function submitRule() {
+      const name = $('nrName').value.trim();
+      if (!name) return alert('Enter a rule name');
+      const cond = {};
+      const cls = $('nrClass').value.trim(); if (cls) cond.class = cls.split(',').map(s=>s.trim()).filter(Boolean);
+      const col = $('nrColor').value.trim(); if (col) cond.color = col.split(',').map(s=>s.trim()).filter(Boolean);
+      const zn = $('nrZone').value.trim(); if (zn) cond.zone = zn.split(',').map(s=>s.trim()).filter(Boolean);
+      const dw = parseInt($('nrDwell').value) || 0; if (dw > 0) cond.dwell_time_min = dw;
+      const rule = { name, enabled:true, conditions:cond, event_type:$('nrType').value, priority:$('nrPri').value, description:name };
+      try {
+        const res = await fetch(BACKEND_URL + '/api/config/watchlist/rules', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(rule) });
+        const d = await res.json();
+        if (d.rule) { watchlistRules.push(d.rule); renderWatchlist(); }
+        cancelRule();
+      } catch(e) { console.error('[Watchlist]', e); }
+    }
+
+    function cancelRule() {
+      showingRuleForm = false;
+      $('ruleForm').style.display = 'none';
+      $('ruleForm').innerHTML = '';
+    }
+
+    async function loadZones() {
+      try {
+        const r = await fetch(BACKEND_URL + '/api/config/zones');
+        const d = await r.json();
+        zones = d.zones?.zones || [];
+        drawZones();
+      } catch(e) { console.error('[Zones]', e); setTimeout(loadZones, 5000); }
+    }
+
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        $('panel' + t.dataset.tab.charAt(0).toUpperCase() + t.dataset.tab.slice(1)).classList.add('active');
+      });
+    });
+
+    function init() {
+      startVideoFeed(); connectWebSocket(); loadWatchlist(); loadZones();
+      setInterval(loadZones, 30000);
+      fetch(VISION_URL + '/health').then(r=>r.json()).then(d => {
+        if (d.config?.video_source) $source.textContent = d.config.video_source;
+      }).catch(()=>{});
+    }
+    init();
+  </script>
+</body>
+</html>
